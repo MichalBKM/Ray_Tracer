@@ -1,2 +1,2 @@
 # ray_tracer
-HW1 in "Graphic Fundementals" Course (0368-3236), TAU
+HW1 in "Fundamentals of Computer Graphics, Image Processing and Vision" Course (0368-3236), TAU
