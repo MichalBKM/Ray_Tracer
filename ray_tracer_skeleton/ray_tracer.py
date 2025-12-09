@@ -10,6 +10,12 @@ from surfaces.cube import Cube
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
 
+''' IMPORTANT NOTES:
+- all vectors are numpy arrays
+- handle edge cases such as no intersection.
+- implement cube intersection method
+ '''
+
 class Ray:
     def __init__(self, origin, direction):
         self.origin = origin
@@ -107,6 +113,11 @@ def main():
     # Save the output image
     save_image(image_array)
 
+def test():
+    r = Ray(np.array([0,0,0]), np.array([1,1,1]) / np.sqrt(3))
+    s = Sphere(np.array([0,0,0]), 1, 0)
+    t, P, N = s.intersection(r)
+    print(t, P, N)
 
 if __name__ == '__main__':
-    main()
+    test()
