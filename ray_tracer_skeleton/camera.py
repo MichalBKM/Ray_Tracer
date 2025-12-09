@@ -1,24 +1,37 @@
 import numpy as np
 
 class Camera:
-    def __init__(self, position, look_at, up_vector, screen_distance, screen_width):
+    def __init__(self, position, look_at, up_vector, screen_distance, screen_width, aspect_ratio=1.0):
         self.position = position
         self.look_at = look_at
         self.up_vector = up_vector
         self.screen_distance = screen_distance
         self.screen_width = screen_width
-        self.setop_camera_axes()
+        self.screen_height = self.screen_width / aspect_ratio
+        self.setup_camera_axes()
+
     
     def setup_camera_axes(self):
         # FORWARD direction: calculation + normalization
         self.forward = (self.look_at - self.position)
-        self.forward = self.forward / np.linalg(self.forward)
+        self.forward = self.forward / np.linalg.norm(self.forward)
 
         # RIGHT direction: calculation + normalization
         self.right = np.cross(self.forward, self.up_vector)
-        self.right = self.right / np.linalg(self.right)
+        self.right = self.right / np.linalg.norm(self.right)
 
         # UP direction: calculation + normalization
         self.up = np.cross(self.right, self.forward)
         self.up = self.up / np.linalg.norm(self.up)
+    
+    def screen_geometry(self):
+        
+        screen_center = self.position + self.forward * self.screen_distance
+
+        half_w = self.screen_width / 2
+        half_h = self.screen_height / 2
+
+        top_left = screen_center + self.up * half_h - self.right * half_w
+
+        return top_left
 
