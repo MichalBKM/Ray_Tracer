@@ -1,6 +1,7 @@
 import numpy as np
+from surfaces.surface import Surface
 
-class InfinitePlane:
+class InfinitePlane(Surface):
     def __init__(self, normal, offset, material_index):
         self.normal = normal
         self.offset = offset
@@ -8,9 +9,11 @@ class InfinitePlane:
     
     def intersection(self, ray):
         # t = -(P0 • N + d) / (V • N)
-        try:
-            t = -(np.dot(self.normal, ray.origin) + self.offset) / (np.dot(self.normal, ray.direction))
-        except ZeroDivisionError:
+        denom = np.dot(self.normal, ray.direction)
+        if abs(denom) < 1e-6:
             return None
-        p = ray.origin + t * ray.direction
-        return p
+        t = -(np.dot(self.normal, ray.origin) + self.offset) / denom
+        if t < 0:
+            return None
+        P = ray.origin + t * ray.direction
+        return t, P, self.normal

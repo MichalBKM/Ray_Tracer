@@ -1,6 +1,7 @@
 import numpy as np
+from surfaces.surface import Surface
 
-class Cube:
+class Cube(Surface):
     def __init__(self, position, scale, material_index):
         self.position = position # Cube center
         self.scale = scale # Edge length

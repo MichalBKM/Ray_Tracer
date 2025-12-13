@@ -1,6 +1,7 @@
 import numpy as np
+from surfaces.surface import Surface
 
-class Sphere:
+class Sphere(Surface):
     def __init__(self, position, radius, material_index):
         self.position = position
         self.radius = radius
@@ -26,3 +27,4 @@ class Sphere:
         P = ray.origin + t * ray.direction
         N = (P - self.position) / np.linalg.norm(P - self.position)
         return t, P, N
+

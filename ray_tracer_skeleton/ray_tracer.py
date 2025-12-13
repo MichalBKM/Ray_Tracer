@@ -9,14 +9,13 @@ from scene_settings import SceneSettings
 from surfaces.cube import Cube
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
-
-class Ray:
-    def __init__(self, origin, direction):
-        self.origin = origin
-        self.direction = direction
+from ray import Ray
     
 def parse_scene_file(file_path):
     objects = []
+    surfaces = []
+    lights = []
+    materials = []
     camera = None
     scene_settings = None
     with open(file_path, 'r') as f:
@@ -33,22 +32,22 @@ def parse_scene_file(file_path):
                 scene_settings = SceneSettings(params[:3], params[3], params[4])
             elif obj_type == "mtl":
                 material = Material(params[:3], params[3:6], params[6:9], params[9], params[10])
-                objects.append(material)
+                materials.append(material)
             elif obj_type == "sph":
                 sphere = Sphere(params[:3], params[3], int(params[4]))
-                objects.append(sphere)
+                surfaces.append(sphere)
             elif obj_type == "pln":
                 plane = InfinitePlane(params[:3], params[3], int(params[4]))
-                objects.append(plane)
+                surfaces.append(plane)
             elif obj_type == "box":
                 cube = Cube(params[:3], params[3], int(params[4]))
-                objects.append(cube)
+                surfaces.append(cube)
             elif obj_type == "lgt":
                 light = Light(params[:3], params[3:6], params[6], params[7], params[8])
-                objects.append(light)
+                lights.append(light)
             else:
                 raise ValueError("Unknown object type: {}".format(obj_type))
-    return camera, scene_settings, objects
+    return camera, scene_settings, surfaces, lights, materials
 
 
 def save_image(image_array):
@@ -57,11 +56,18 @@ def save_image(image_array):
     # Save the image to a file
     image.save("scenes/Spheres.png")
 
-def get_ray(pixel_point, camera):
-    origin = camera.position
-    direction = pixel_point - origin
-    direction = direction / np.linalg.norm(direction)
-    return origin, direction
+# find the first intersection of the ray with any of the surfaces
+def find_first_intersection(ray, surfaces):
+    first_hit = None
+    for surf in surfaces:
+                hit = surf.intersection(ray)
+                if hit is not None:
+                    t = hit[0]
+                    if t < 0:
+                        continue
+                    elif  first_hit is None or t < first_hit[0]:
+                        first_hit = hit
+    return first_hit
     
 def main():
     parser = argparse.ArgumentParser(description='Python Ray Tracer')
@@ -72,7 +78,7 @@ def main():
     args = parser.parse_args()
 
     # Parse the scene file
-    camera, scene_settings, objects = parse_scene_file(args.scene_file)
+    camera, scene_settings, surfaces, lights, materials = parse_scene_file(args.scene_file)
     
     # get the image size
     image_width = args.width
@@ -88,17 +94,17 @@ def main():
     
     for i in range(image_height):
         for j in range(image_width):
+            # Discover pixel's screen location
             pixel_point = (top_left + 
                            camera.right * (j * pixel_w + pixel_w / 2) -
                            camera.up * (i * pixel_h + pixel_h / 2))
-            origin, direction = get_ray(pixel_point, camera)
-            ray = Ray(origin, direction)
-            for obj in objects:
-                if isinstance(obj, Sphere):
-                    t, P, N = obj.intersection(ray)
-                    print(t, P, N)
-                    break
-            break
+            ray = Ray(pixel_point, camera)
+            
+            #Check Intersection of the ray with all surfaces in the scene
+            hit = find_first_intersection(ray, surfaces)
+            
+                    
+ 
 
 
     # Dummy result
@@ -106,7 +112,6 @@ def main():
 
     # Save the output image
     save_image(image_array)
-
 
 if __name__ == '__main__':
     main()
