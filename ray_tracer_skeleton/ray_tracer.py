@@ -10,9 +10,8 @@ from surfaces.cube import Cube
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
 from ray import Ray
-    
+
 def parse_scene_file(file_path):
-    objects = []
     surfaces = []
     lights = []
     materials = []
@@ -113,5 +112,6 @@ def main():
     # Save the output image
     save_image(image_array)
 
+    
 if __name__ == '__main__':
     main()
