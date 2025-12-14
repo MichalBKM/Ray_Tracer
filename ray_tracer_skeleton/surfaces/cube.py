@@ -1,21 +1,24 @@
-class Cube:
+import numpy as np
+from surfaces.surface import Surface
+
+class Cube(Surface):
     def __init__(self, position, scale, material_index):
-        self.position = position
-        self.scale = scale
+        self.position = position # Cube center
+        self.scale = scale # Edge length
         self.material_index = material_index
     
     # TODO: Implement the intersection method
     def intersection(self, ray):
-        origin = ray.origin          # numpy array [ox, oy, oz]
-        direction = ray.direction    # numpy array [dx, dy, dz]
+        origin = ray.origin          # Starting point of the Ray which is a numpy array [ox, oy, oz]
+        direction = ray.direction    # Direction vector also a numpy array [dx, dy, dz]
 
         # 1. Compute cube bounds from center and scale
         half = self.scale / 2.0
         min_bound = self.position - half   # [min_x, min_y, min_z]
         max_bound = self.position + half   # [max_x, max_y, max_z]
 
-        t_min = -np.inf   # global "enter" t
-        t_max =  np.inf   # global "exit" t
+        t_min = -np.inf   
+        t_max =  np.inf   
         eps = 1e-6
 
         # 2. Slab method per axis
@@ -26,24 +29,24 @@ class Cube:
             slab_max = max_bound[axis]
 
             if abs(d) < eps:
-                # Ray is parallel to this pair of planes
+                # no Direction on this axis -> Ray is parallel
                 if o < slab_min or o > slab_max:
-                    return None  # outside the slab → no hit
-                # else: always inside this slab, no change to t_min/t_max
+                    return None  # Ray is outside the slab -> no hit
+                # else: Move to the next axis 
                 continue
 
-            # Where does the ray hit the two planes on this axis?
+            # Where does the ray hit the two planes on this axis
             t1 = (slab_min - o) / d
             t2 = (slab_max - o) / d
 
             t_near = min(t1, t2)
             t_far  = max(t1, t2)
 
-            # Update global interval
+            # Update global interval by crossing them
             t_min = max(t_min, t_near)
             t_max = min(t_max, t_far)
 
-            # If interval collapses → no intersection
+            # no valid interval -> no intersection
             if t_min > t_max:
                 return None
 
