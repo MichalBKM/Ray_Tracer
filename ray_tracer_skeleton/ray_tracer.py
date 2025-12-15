@@ -58,6 +58,7 @@ def save_image(image_array):
 # find the first intersection of the ray with any of the surfaces
 def find_first_intersection(ray, surfaces):
     first_hit = None
+    first_surf = None
     for surf in surfaces:
                 hit = surf.intersection(ray)
                 if hit is not None:
@@ -66,7 +67,15 @@ def find_first_intersection(ray, surfaces):
                         continue
                     elif  first_hit is None or t < first_hit[0]:
                         first_hit = hit
-    return first_hit
+                        first_surf = surf
+                        
+    return first_hit, first_surf
+
+def compute_color(ray, first_hit, surf, lights, materials):
+    mat = materials[surf.material_index - 1]
+    color = (0, 0, 0)
+
+    pass
     
 def main():
     parser = argparse.ArgumentParser(description='Python Ray Tracer')
@@ -100,7 +109,12 @@ def main():
             ray = Ray(pixel_point, camera)
             
             #Check Intersection of the ray with all surfaces in the scene
-            hit = find_first_intersection(ray, surfaces)
+            hit, surf = find_first_intersection(ray, surfaces)
+            if hit is None or surf is None:
+                continue
+            
+            # TODO: Compute the color of the pixel
+            color = compute_color(ray, hit, surf, lights, materials)
             
                     
  
