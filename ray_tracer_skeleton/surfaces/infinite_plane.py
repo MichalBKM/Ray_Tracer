@@ -9,11 +9,17 @@ class InfinitePlane(Surface):
     
     def intersection(self, ray):
         # t = -(P0 • N + d) / (V • N)
-        denom = np.dot(self.normal, ray.direction)
+        norm = np.array(self.normal)
+        origin = np.array(ray.origin)
+        direction = np.array(ray.direction)
+
+        denom = np.dot(norm, direction)
         if abs(denom) < 1e-6:
             return None
-        t = -(np.dot(self.normal, ray.origin) + self.offset) / denom
-        if t < 0:
+    
+        t = -(np.dot(norm, origin) + self.offset) / denom
+        if t < 1e-6:
             return None
-        P = ray.origin + t * ray.direction
-        return t, P, self.normal
+        
+        P = origin + t * direction
+        return t, P, norm

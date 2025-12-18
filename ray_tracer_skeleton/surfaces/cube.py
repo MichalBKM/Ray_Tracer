@@ -14,8 +14,9 @@ class Cube(Surface):
 
         # 1. Compute cube bounds from center and scale
         half = self.scale / 2.0
-        min_bound = self.position - half   # [min_x, min_y, min_z]
-        max_bound = self.position + half   # [max_x, max_y, max_z]
+        pos_array = np.array(self.position)
+        min_bound = pos_array - half   # [min_x, min_y, min_z]
+        max_bound = pos_array + half   # [max_x, max_y, max_z]
 
         t_min = -np.inf   
         t_max =  np.inf   

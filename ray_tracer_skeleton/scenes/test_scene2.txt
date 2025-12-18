@@ -1,0 +1,29 @@
+# --- Scene Settings ---
+# background_color(RGB) | root_number_of_shadow_rays | max_recursion_depth
+set 0.2 0.4 0.6 1 2
+
+# --- Camera ---
+# position(XYZ) | look_at(XYZ) | up_vector(XYZ) | screen_dist | screen_width
+cam 0 2 10 0 0 0 0 1 0 2 2
+
+# --- Materials ---
+# diffuse(RGB) | specular(RGB) | reflection(RGB) | shininess | transparency
+# Material 1: Red Matte (for Sphere)
+mtl 0.8 0.1 0.1 0.5 0.5 0.5 0 0 0 10 0
+# Material 2: Blue Plastic (for Box)
+mtl 0.1 0.1 0.8 0.7 0.7 0.7 0 0 0 50 0
+# Material 3: Gray Floor (for Plane)
+mtl 0.5 0.5 0.5 0.2 0.2 0.2 0 0 0 1 0
+
+# --- Surfaces ---
+# Sphere: center(XYZ) | radius | material_index
+sph -1 0.5 0 0.5 1
+# Box: center(XYZ) | edge_length | material_index
+box 1 0.5 0 1 2
+# Infinite Plane: normal(XYZ) | offset_distance | material_index
+pln 0 1 0 0 3
+
+# --- Lights ---
+# position(XYZ) | color(RGB) | specular_intensity | shadow_intensity | radius
+lgt 5 5 5 1 1 1 1 0.7 0.1
+lgt -5 5 2 1 1 1 0.8 0.7 0.1
