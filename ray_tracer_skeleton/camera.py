@@ -14,7 +14,7 @@ class Camera:
     
     def setup_camera_axes(self):
         # FORWARD direction: calculation + normalization
-        self.forward = (self.look_at - self.position)
+        self.forward = np.array(self.look_at) - np.array(self.position)
         self.forward = normalize(self.forward) 
 
         # RIGHT direction: calculation + normalization
@@ -26,13 +26,13 @@ class Camera:
         self.up = normalize(self.up)
     
     def screen_geometry(self):
-        
-        screen_center = self.position + self.forward * self.screen_distance
+        pos_array = np.array(self.position)
+        screen_center = pos_array + self.forward * self.screen_distance
 
         half_w = self.screen_width / 2
         half_h = self.screen_height / 2
 
-        top_left = screen_center + self.up * half_h - self.right * half_w
+        top_left = screen_center + (self.up * half_h) - (self.right * half_w)
 
         return top_left
 

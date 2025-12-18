@@ -74,25 +74,37 @@ def find_first_intersection(ray, surfaces):
 
 def compute_color(ray, first_hit, surf, lights, mat, scene_settings):
     _, P, N = first_hit
-    ambient = scene_settings.background_color * mat.diffuse_color
-    diffuse, specular = 0, 0
-    V = -ray.direction 
+
+    mat_diffuse = np.array(mat.diffuse_color)
+    mat_specular = np.array(mat.specular_color)
+
+    total_diffuse = np.zeros(3)
+    total_specular = np.zeros(3)
+
+    V = normalize(np.array(-ray.direction))
 
     for lgt in lights:
         #Does the light hit the surface?
-        
         #Case_1: there is a hit
-        L = normalize(lgt.position - P)
-        diffuse += mat.diffuse_color * lgt.color * max(0, np.dot(N, L))
+        L = normalize(np.array(lgt.position) - P)
+        lgt_color = np.array(lgt.color)
+
+        # diffuse component
+        diff = mat_diffuse * lgt_color * max(0, np.dot(N, L))
+
+        # specular component
         R = normalize(2 * np.dot(N, L) * N - L)
-        specular += mat.specular_color * lgt.color * max(0, np.dot(R, V)) ** mat.shininess
-        color += (diffuse + specular)
+        spec = mat_specular * lgt.color * lgt.specular_intensity * max(0, np.dot(R, V)) ** mat.shininess
+        
+        total_diffuse += diff
+        total_specular += spec
 
         #Case_2: there is no hit
     
     # TODO: Check if ambient = background color
-    color = (ambient * mat.transparency) + (diffuse + specular) * (1 - mat.transparency) + mat.reflection_color
-    return color
+    # color = (ambient * mat.transparency) + (diffuse + specular) * (1 - mat.transparency) + mat.reflection_color
+    
+    return np.clip(total_diffuse + total_specular, 0, 1)
 
 
     
@@ -113,12 +125,12 @@ def main():
     aspect_ratio = image_width / image_height
     camera = Camera(camera.position, camera.look_at, camera.up_vector, camera.screen_distance, camera.screen_width, aspect_ratio)
     
-    
     # TODO: Implement the ray tracer
     top_left = camera.screen_geometry()
-    pixel_h= camera.screen_width / image_width
-    pixel_w = camera.screen_height / image_height
-    
+    pixel_w = camera.screen_width / image_width
+    pixel_h = camera.screen_height / image_height
+
+    image_array = np.zeros((image_height, image_width, 3))
     for i in range(image_height):
         for j in range(image_width):
             # Discover pixel's screen location
@@ -130,18 +142,19 @@ def main():
             #Check Intersection of the ray with all surfaces in the scene
             hit, surf = find_first_intersection(ray, surfaces)
             if hit is None or surf is None:
+                image_array[i, j] = np.array(scene_settings.background_color) * 255
                 continue
             
             # TODO: Compute the color of the pixel
             material = materials[surf.material_index - 1]
             color = compute_color(ray, hit, surf, lights, material, scene_settings)
-            
+            image_array[i,j] = color * 255
                     
  
 
 
     # Dummy result
-    image_array = np.zeros((500, 500, 3))
+    # image_array = np.zeros((500, 500, 3))
 
     # Save the output image
     save_image(image_array)

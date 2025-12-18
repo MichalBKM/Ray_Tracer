@@ -8,7 +8,9 @@ class Sphere(Surface):
         self.material_index = material_index
 
     def intersection(self, ray):
-        L = self.position - ray.origin
+        sphere_center = np.array(self.position)
+        ray_origin = np.array(ray.origin)
+        L = sphere_center - ray_origin
         tca = np.dot(L, ray.direction)
         if tca < 0:
             return None
@@ -24,7 +26,7 @@ class Sphere(Surface):
             t = t1
         else:
             return None
-        P = ray.origin + t * ray.direction
-        N = normalize(P - self.position)
+        P = ray_origin + t * ray.direction
+        N = normalize(P - sphere_center)
         return t, P, N
 
