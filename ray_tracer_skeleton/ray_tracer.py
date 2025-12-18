@@ -53,7 +53,8 @@ def parse_scene_file(file_path):
 def save_image(image_array):
     image = Image.fromarray(np.uint8(image_array))
 
-    # Save the image to a file
+    # Save the image to a file 
+    # TODO: change the file name as needed
     image.save("scenes/Spheres.png")
 
 # find the first intersection of the ray with any of the surfaces
@@ -107,7 +108,6 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings):
     return np.clip(total_diffuse + total_specular, 0, 1)
 
 
-    
 def main():
     parser = argparse.ArgumentParser(description='Python Ray Tracer')
     parser.add_argument('scene_file', type=str, help='Path to the scene file')
@@ -150,9 +150,6 @@ def main():
             color = compute_color(ray, hit, surf, lights, material, scene_settings)
             image_array[i,j] = color * 255
                     
- 
-
-
     # Dummy result
     # image_array = np.zeros((500, 500, 3))
 
