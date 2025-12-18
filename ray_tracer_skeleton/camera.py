@@ -1,4 +1,5 @@
 import numpy as np
+from utils import normalize
 
 class Camera:
     def __init__(self, position, look_at, up_vector, screen_distance, screen_width, aspect_ratio=1.0):
@@ -14,15 +15,15 @@ class Camera:
     def setup_camera_axes(self):
         # FORWARD direction: calculation + normalization
         self.forward = (self.look_at - self.position)
-        self.forward = self.forward / np.linalg.norm(self.forward)
+        self.forward = normalize(self.forward) 
 
         # RIGHT direction: calculation + normalization
         self.right = np.cross(self.forward, self.up_vector)
-        self.right = self.right / np.linalg.norm(self.right)
+        self.right = normalize(self.right)
 
         # UP direction: calculation + normalization
         self.up = np.cross(self.right, self.forward)
-        self.up = self.up / np.linalg.norm(self.up)
+        self.up = normalize(self.up)
     
     def screen_geometry(self):
         

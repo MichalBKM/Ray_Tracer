@@ -10,6 +10,7 @@ from surfaces.cube import Cube
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
 from ray import Ray
+from utils import normalize
 
 def parse_scene_file(file_path):
     surfaces = []
@@ -68,14 +69,32 @@ def find_first_intersection(ray, surfaces):
                     elif  first_hit is None or t < first_hit[0]:
                         first_hit = hit
                         first_surf = surf
-                        
+
     return first_hit, first_surf
 
-def compute_color(ray, first_hit, surf, lights, materials):
-    mat = materials[surf.material_index - 1]
-    color = (0, 0, 0)
+def compute_color(ray, first_hit, surf, lights, mat, scene_settings):
+    _, P, N = first_hit
+    ambient = scene_settings.background_color * mat.diffuse_color
+    diffuse, specular = 0, 0
+    V = -ray.direction 
 
-    pass
+    for lgt in lights:
+        #Does the light hit the surface?
+        
+        #Case_1: there is a hit
+        L = normalize(lgt.position - P)
+        diffuse += mat.diffuse_color * lgt.color * max(0, np.dot(N, L))
+        R = normalize(2 * np.dot(N, L) * N - L)
+        specular += mat.specular_color * lgt.color * max(0, np.dot(R, V)) ** mat.shininess
+        color += (diffuse + specular)
+
+        #Case_2: there is no hit
+    
+    # TODO: Check if ambient = background color
+    color = (ambient * mat.transparency) + (diffuse + specular) * (1 - mat.transparency) + mat.reflection_color
+    return color
+
+
     
 def main():
     parser = argparse.ArgumentParser(description='Python Ray Tracer')
@@ -114,7 +133,8 @@ def main():
                 continue
             
             # TODO: Compute the color of the pixel
-            color = compute_color(ray, hit, surf, lights, materials)
+            material = materials[surf.material_index - 1]
+            color = compute_color(ray, hit, surf, lights, material, scene_settings)
             
                     
  

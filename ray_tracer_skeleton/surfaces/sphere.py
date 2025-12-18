@@ -1,6 +1,6 @@
 import numpy as np
 from surfaces.surface import Surface
-
+from utils import normalize
 class Sphere(Surface):
     def __init__(self, position, radius, material_index):
         self.position = position
@@ -25,6 +25,6 @@ class Sphere(Surface):
         else:
             return None
         P = ray.origin + t * ray.direction
-        N = (P - self.position) / np.linalg.norm(P - self.position)
+        N = normalize(P - self.position)
         return t, P, N
 
