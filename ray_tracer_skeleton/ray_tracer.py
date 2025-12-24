@@ -179,6 +179,18 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     
     return np.clip(output_color, 0.0, 1.0)
 
+# TODO: Implement reflection color computation
+def compute_reflection_color(ray, surf, mat, normal, hit_point, max_depth):
+    reflection_color = mat.reflection_color
+    if np.all(reflection_color == 0):
+        return np.zeros(3)
+    R = normalize(ray.direction - 2 * np.dot(ray.direction, normal) * normal)
+    
+    reflection_ray = Ray(hit_point + R * 1e-4, R)
+
+    pass
+
+
 
 def main():
     random.seed(0)
