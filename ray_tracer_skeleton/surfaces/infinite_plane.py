@@ -1,5 +1,6 @@
 import numpy as np
 from surfaces.surface import Surface
+from utils import EPS
 
 class InfinitePlane(Surface):
     def __init__(self, normal, offset, material_index):
@@ -14,11 +15,11 @@ class InfinitePlane(Surface):
         direction = np.array(ray.direction)
 
         denom = np.dot(norm, direction)
-        if abs(denom) < 1e-6:
+        if abs(denom) < EPS:
             return None
     
         t = -(np.dot(norm, origin) + self.offset) / denom
-        if t < 1e-6:
+        if t < EPS:
             return None
         
         P = origin + t * direction

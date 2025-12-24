@@ -10,7 +10,7 @@ from surfaces.cube import Cube
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
 from ray import Ray
-from utils import normalize
+from utils import normalize, EPS
 import random
 
 def parse_scene_file(file_path):
@@ -72,7 +72,6 @@ def find_first_intersection(ray, surfaces):
     return first_hit, first_surf
 
 def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
-    EPS = 1e-4
 
     direction = lgt_point - hit_point
     distance_to_light = np.linalg.norm(direction)
@@ -171,6 +170,8 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
         spec = spec * light_intensity
         total_diffuse += diff
         total_specular += spec
+
+    reflection_color = compute_reflection_color(ray, P, N, mat, surfaces, lights, scene_settings, 0, materials) 
     
     # where does light_intensity come from?
     output_color = (scene_settings.background_color * np.array(mat.transparency) 
@@ -180,15 +181,35 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     return np.clip(output_color, 0.0, 1.0)
 
 # TODO: Implement reflection color computation
-def compute_reflection_color(ray, surf, mat, normal, hit_point, max_depth):
-    reflection_color = mat.reflection_color
-    if np.all(reflection_color == 0):
-        return np.zeros(3)
-    R = normalize(ray.direction - 2 * np.dot(ray.direction, normal) * normal)
-    
-    reflection_ray = Ray(hit_point + R * 1e-4, R)
+def compute_reflection_color(ray, hit_point, normal, mat, surfaces, lights, scene_settings, depth, materials):
+    # 1. Check recursion limit 
+    if depth >= scene_settings.max_recursions:
+        return np.array(scene_settings.background_color)  
 
-    pass
+    # 2. Check if the material is actually reflective [cite: 33]
+    if np.all(np.array(mat.reflection_color) == 0):
+        return np.zeros(3)
+
+    # 3. Calculate reflection direction [cite: 109]
+    D = ray.direction
+    R_dir = normalize(D - 2 * np.dot(D, normal) * normal)
+
+    # 4. Construct reflection ray with epsilon offset [cite: 120]
+    reflection_ray = Ray(hit_point + R_dir * EPS, R_dir)
+
+    # 5. Find what the reflection ray hits
+    hit, surf_hit = find_first_intersection(reflection_ray, surfaces)
+
+    if hit is None:
+        # Hits nothing: return background color 
+        return np.array(scene_settings.background_color)
+
+    # 6. Recursive call to get the color of the reflected object [cite: 77]
+    mat_hit = materials[surf_hit.material_index - 1]
+    reflected_rgb = compute_color(reflection_ray, hit, surf_hit, lights, mat_hit, scene_settings, surfaces, depth + 1)
+
+    # 7. Multiply by reflection color coefficient 
+    return reflected_rgb * np.array(mat.reflection_color)
 
 
 
