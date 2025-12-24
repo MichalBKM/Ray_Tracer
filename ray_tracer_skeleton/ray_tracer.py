@@ -11,6 +11,7 @@ from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
 from ray import Ray
 from utils import normalize
+import random
 
 def parse_scene_file(file_path):
     surfaces = []
@@ -73,7 +74,80 @@ def find_first_intersection(ray, surfaces):
 
     return first_hit, first_surf
 
-def compute_color(ray, first_hit, surf, lights, mat, scene_settings):
+def is_occluded(lgt_point, hit_point, surfaces):
+    # Calculate the vector and the distance to the target
+    direction_vec = hit_point - lgt_point
+    distance_to_hit = np.linalg.norm(direction_vec)
+    direction_vec = normalize(direction_vec)
+    
+    # Create the ray. 
+    shadow_ray = Ray(lgt_point + (direction_vec * 0.001), direction_vec)
+    
+    for surf in surfaces:
+        # Get the distance to the intersection with this surface
+        hit = surf.intersection(shadow_ray)
+        
+        # We use a small epsilon (0.001) to avoid hitting the target point itself
+        if hit is not None and 0.001 < hit[0] < (distance_to_hit - 0.001):
+            return True
+            
+    return False
+
+def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surfaces):
+    """
+    Calculates the light intensity at a hit_point taking into account soft shadows.
+    """
+    # 1. Direction from the center of the light to the hit point on the surface 
+    # We treat the vector from the light to the point as the center of our projection
+    L = hit_point - lgt.position
+    L_norm = normalize(L)
+    
+    # 2. Find a plane perpendicular to the ray L_norm 
+    # We need two vectors (u, v) that are perpendicular to L_norm and each other
+    # Start by picking an arbitrary vector that isn't parallel to L_norm
+    temp_vec = np.array([1, 0, 0]) if abs(L_norm[0]) < 0.9 else np.array([0, 1, 0])
+    u = normalize(np.cross(L_norm, temp_vec)) # First perpendicular vector 
+    v = normalize(np.cross(L_norm, u))        # Second perpendicular vector 
+    
+    # 3. Setup the grid 
+    N = int(root_shadow_rays)
+    # The light radius/width defines the rectangle size
+    cell_size = lgt.radius / N 
+    
+    # Calculate the bottom-left corner of the light rectangle 
+    # (Subtract half the total width/height from the center)
+    bottom_left = lgt.position - (lgt.radius / 2) * u - (lgt.radius / 2) * v
+    
+    hits = 0
+    total_rays = N * N # Total number of rays cast is N^2 
+    
+    # 4. Iterate through the NxN grid [cite: 132]
+    for i in range(N):
+        for j in range(N):
+            # 5. Jitter: Select a random point in each cell to avoid banding 
+            random_u = random.uniform(0, 1)
+            random_v = random.uniform(0, 1)
+            
+            # Position of the sample on the area light
+            sample_point = (bottom_left + 
+                           (i + random_u) * cell_size * u + 
+                           (j + random_v) * cell_size * v)
+            
+            # 6. Check occlusion [cite: 120, 135]
+            # Shoot a shadow ray from the sample_point to the hit_point
+            if not is_occluded(sample_point, hit_point, surfaces):
+                hits += 1
+                
+    # 7. Calculate final intensity using the shadow intensity parameter [cite: 138, 139]
+    # percentage_lit is the fraction of rays that reached the surface [cite: 124, 139]
+    percentage_lit = hits / total_rays
+    
+    # Light received = (1 - shadow_intensity) + shadow_intensity * (% of rays hitting) [cite: 138, 139]
+    intensity = (1 - lgt.shadow_intensity) + (lgt.shadow_intensity * percentage_lit)
+    
+    return intensity
+
+def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     _, P, N = first_hit
 
     mat_diffuse = np.array(mat.diffuse_color)
@@ -84,28 +158,29 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings):
 
     V = normalize(np.array(-ray.direction))
 
-    for lgt in lights:
-        #Does the light hit the surface?
+    for lgt in lights:        
         #Case_1: there is a hit
         L = normalize(np.array(lgt.position) - P)
         lgt_color = np.array(lgt.color)
 
+        #Compute Light Intensity
+        light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surfaces)
+
         # diffuse component
-        diff = mat_diffuse * lgt_color * max(0, np.dot(N, L))
+        diff = mat_diffuse * lgt_color * max(0, np.dot(N, L)) * light_intensity
 
         # specular component
         R = normalize(2 * np.dot(N, L) * N - L)
         spec = mat_specular * lgt.color * lgt.specular_intensity * max(0, np.dot(R, V)) ** mat.shininess
-        
+        spec = spec * light_intensity
         total_diffuse += diff
         total_specular += spec
-
-        #Case_2: there is no hit
     
-    # TODO: Check if ambient = background color
-    # color = (ambient * mat.transparency) + (diffuse + specular) * (1 - mat.transparency) + mat.reflection_color
-    
-    return np.clip(total_diffuse + total_specular, 0, 1)
+    #where does light_intensity come from?
+    output_color = (scene_settings.background_color * np.array(mat.transparency) 
+                    + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
+                    + mat.reflection_color)
+    return output_color
 
 
 def main():
@@ -137,7 +212,7 @@ def main():
             pixel_point = (top_left + 
                            camera.right * (j * pixel_w + pixel_w / 2) -
                            camera.up * (i * pixel_h + pixel_h / 2))
-            ray = Ray(pixel_point, camera)
+            ray = Ray(camera.position, normalize(pixel_point - camera.position))
             
             #Check Intersection of the ray with all surfaces in the scene
             hit, surf = find_first_intersection(ray, surfaces)
@@ -147,7 +222,7 @@ def main():
             
             # TODO: Compute the color of the pixel
             material = materials[surf.material_index - 1]
-            color = compute_color(ray, hit, surf, lights, material, scene_settings)
+            color = compute_color(ray, hit, surf, lights, material, scene_settings, surfaces)
             image_array[i,j] = color * 255
                     
     # Dummy result
