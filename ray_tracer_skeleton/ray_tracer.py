@@ -92,19 +92,19 @@ def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
 
 
 def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
-    # 1. Direction from the center of the light to the hit point on the surface 
+    # Direction from the center of the light to the hit point on the surface 
     # We treat the vector from the light to the point as the center of our projection
     L = hit_point - lgt.position
     L_norm = normalize(L)
     
-    # 2. Find a plane perpendicular to the ray L_norm 
+    # Find a plane perpendicular to the ray L_norm 
     # We need two vectors (u, v) that are perpendicular to L_norm and each other
     # Start by picking an arbitrary vector that isn't parallel to L_norm
     temp_vec = np.array([1, 0, 0]) if abs(L_norm[0]) < 0.9 else np.array([0, 1, 0])
     u = normalize(np.cross(L_norm, temp_vec)) # First perpendicular vector 
     v = normalize(np.cross(L_norm, u))        # Second perpendicular vector 
     
-    # 3. Setup the grid 
+    # Setup the grid 
     N = int(root_shadow_rays)
     # The light radius/width defines the rectangle size
     cell_size = lgt.radius / N 
