@@ -1,43 +1,11 @@
-# ===============================
-# Basic Ray Tracer Test Scene
-# ===============================
+set 0.1 0.1 0.1 6 1
 
-# --- Scene Settings ---
-# background_color(RGB) | root_number_of_shadow_rays | max_recursion_depth
-set 0.1 0.1 0.1 3 1
-
-# --- Camera ---
-# position(XYZ) | look_at(XYZ) | up_vector(XYZ) | screen_dist | screen_width
 cam 0 2 8   0 0 0   0 1 0   2 2
 
-# --- Materials ---
-# diffuse(RGB) | specular(RGB) | reflection(RGB) | shininess | transparency
-
-# Material 1: Red matte sphere
 mtl 0.8 0.1 0.1   0.3 0.3 0.3   0 0 0   10   0
-
-# Material 2: Blue shiny box
-mtl 0.1 0.1 0.8   0.9 0.9 0.9   0 0 0   50   0
-
-# Material 3: Gray floor
 mtl 0.5 0.5 0.5   0.2 0.2 0.2   0 0 0   1    0
 
-# --- Surfaces ---
+sph 0 0.5 0   0.5   1
+pln 0 1 0   0   2
 
-# Sphere: center(XYZ) | radius | material_index
-sph -1 0.5 0   0.5   1
-
-# Box: center(XYZ) | edge_length | material_index
-box 1 0.5 0   1     2
-
-# Infinite Plane: normal(XYZ) | offset | material_index
-pln 0 1 0   0   3
-
-# --- Lights ---
-# position(XYZ) | color(RGB) | specular_intensity | shadow_intensity | radius
-
-# Key light (casts shadows)
-lgt 5 5 5   1 1 1   1   1   0.0
-
-# Fill light (no shadows)
-lgt -5 5 2  0.5 0.5 0.5   0.5   0   0.0
+lgt 3 5 3   1 1 1   1   1   1.5

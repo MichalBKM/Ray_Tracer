@@ -71,26 +71,27 @@ def find_first_intersection(ray, surfaces):
 
     return first_hit, first_surf
 
-def is_occluded(lgt_point, hit_point, surfaces):
-    # Calculate the vector and the distance to the target
-    direction_vec = lgt_point - hit_point
-    distance_to_hit = np.linalg.norm(direction_vec)
-    direction_vec = normalize(direction_vec)
-    
-    # Create the ray. 
-    shadow_ray = Ray(hit_point + (direction_vec * 1e-4), direction_vec)
-    
+def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
+    EPS = 1e-4
+
+    direction = lgt_point - hit_point
+    distance_to_light = np.linalg.norm(direction)
+    direction = normalize(direction)
+
+    shadow_ray = Ray(hit_point + direction * EPS, direction)
+
     for surf in surfaces:
-        # Get the distance to the intersection with this surface
+        if surf is hit_surface:
+            continue
+
         hit = surf.intersection(shadow_ray)
-        
-        # We use a small epsilon (0.001) to avoid hitting the target point itself
-        if hit is not None and 0.001 < hit[0] < (distance_to_hit - 0.001):
+        if hit is not None and EPS < hit[0] < distance_to_light - EPS:
             return True
-            
+
     return False
 
-def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surfaces):
+
+def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     """
     Calculates the light intensity at a hit_point taking into account soft shadows.
     """
@@ -132,7 +133,7 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surfaces):
             
             # 6. Check occlusion [cite: 120, 135]
             # Shoot a shadow ray from the sample_point to the hit_point
-            if not is_occluded(sample_point, hit_point, surfaces):
+            if not is_occluded(sample_point, hit_point, surf, surfaces):
                 hits += 1
                 
     # 7. Calculate final intensity using the shadow intensity parameter [cite: 138, 139]
@@ -161,7 +162,7 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
         lgt_color = np.array(lgt.color)
 
         #Compute Light Intensity
-        light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surfaces)
+        light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surf, surfaces)
 
         # diffuse component
         diff = mat_diffuse * lgt_color * max(0, np.dot(N, L)) * light_intensity
