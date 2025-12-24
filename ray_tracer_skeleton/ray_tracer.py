@@ -51,12 +51,9 @@ def parse_scene_file(file_path):
     return camera, scene_settings, surfaces, lights, materials
 
 
-def save_image(image_array):
+def save_image(image_array, output_path):
     image = Image.fromarray(np.uint8(image_array))
-
-    # Save the image to a file 
-    # TODO: change the file name as needed
-    image.save("scenes/Spheres.png")
+    image.save(output_path)
 
 # find the first intersection of the ray with any of the surfaces
 def find_first_intersection(ray, surfaces):
@@ -76,12 +73,12 @@ def find_first_intersection(ray, surfaces):
 
 def is_occluded(lgt_point, hit_point, surfaces):
     # Calculate the vector and the distance to the target
-    direction_vec = hit_point - lgt_point
+    direction_vec = lgt_point - hit_point
     distance_to_hit = np.linalg.norm(direction_vec)
     direction_vec = normalize(direction_vec)
     
     # Create the ray. 
-    shadow_ray = Ray(lgt_point + (direction_vec * 0.001), direction_vec)
+    shadow_ray = Ray(hit_point + (direction_vec * 1e-4), direction_vec)
     
     for surf in surfaces:
         # Get the distance to the intersection with this surface
@@ -171,7 +168,8 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
 
         # specular component
         R = normalize(2 * np.dot(N, L) * N - L)
-        spec = mat_specular * lgt.color * lgt.specular_intensity * max(0, np.dot(R, V)) ** mat.shininess
+        rv = np.dot(R, V)
+        spec = mat_specular * lgt_color * lgt.specular_intensity * (max(rv, 0.0) ** mat.shininess)
         spec = spec * light_intensity
         total_diffuse += diff
         total_specular += spec
@@ -180,10 +178,12 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     output_color = (scene_settings.background_color * np.array(mat.transparency) 
                     + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
                     + mat.reflection_color)
-    return output_color
+    
+    return np.clip(output_color, 0.0, 1.0)
 
 
 def main():
+    random.seed(0)
     parser = argparse.ArgumentParser(description='Python Ray Tracer')
     parser.add_argument('scene_file', type=str, help='Path to the scene file')
     parser.add_argument('output_image', type=str, help='Name of the output image file')
@@ -229,7 +229,7 @@ def main():
     # image_array = np.zeros((500, 500, 3))
 
     # Save the output image
-    save_image(image_array)
+    save_image(image_array, args.output_image)
 
     
 if __name__ == '__main__':
