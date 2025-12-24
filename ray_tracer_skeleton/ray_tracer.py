@@ -92,9 +92,6 @@ def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
 
 
 def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
-    """
-    Calculates the light intensity at a hit_point taking into account soft shadows.
-    """
     # 1. Direction from the center of the light to the hit point on the surface 
     # We treat the vector from the light to the point as the center of our projection
     L = hit_point - lgt.position
@@ -119,10 +116,10 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     hits = 0
     total_rays = N * N # Total number of rays cast is N^2 
     
-    # 4. Iterate through the NxN grid [cite: 132]
+    # Iterate through the NxN grid
     for i in range(N):
         for j in range(N):
-            # 5. Jitter: Select a random point in each cell to avoid banding 
+            # Select a random point in each cell to avoid banding 
             random_u = random.uniform(0, 1)
             random_v = random.uniform(0, 1)
             
@@ -131,16 +128,16 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
                            (i + random_u) * cell_size * u + 
                            (j + random_v) * cell_size * v)
             
-            # 6. Check occlusion [cite: 120, 135]
+            # Check occlusion
             # Shoot a shadow ray from the sample_point to the hit_point
             if not is_occluded(sample_point, hit_point, surf, surfaces):
                 hits += 1
                 
-    # 7. Calculate final intensity using the shadow intensity parameter [cite: 138, 139]
-    # percentage_lit is the fraction of rays that reached the surface [cite: 124, 139]
+    # Calculate final intensity using the shadow intensity parameter
+    # percentage_lit is the fraction of rays that reached the surface
     percentage_lit = hits / total_rays
     
-    # Light received = (1 - shadow_intensity) + shadow_intensity * (% of rays hitting) [cite: 138, 139]
+    # Light received = (1 - shadow_intensity) + shadow_intensity * (% of rays hitting)
     intensity = (1 - lgt.shadow_intensity) + (lgt.shadow_intensity * percentage_lit)
     
     return intensity
@@ -157,11 +154,11 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     V = normalize(np.array(-ray.direction))
 
     for lgt in lights:        
-        #Case_1: there is a hit
+        # Case_1: there is a hit
         L = normalize(np.array(lgt.position) - P)
         lgt_color = np.array(lgt.color)
 
-        #Compute Light Intensity
+        # Compute Light Intensity
         light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surf, surfaces)
 
         # diffuse component
@@ -175,7 +172,7 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
         total_diffuse += diff
         total_specular += spec
     
-    #where does light_intensity come from?
+    # where does light_intensity come from?
     output_color = (scene_settings.background_color * np.array(mat.transparency) 
                     + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
                     + mat.reflection_color)
@@ -226,8 +223,6 @@ def main():
             color = compute_color(ray, hit, surf, lights, material, scene_settings, surfaces)
             image_array[i,j] = color * 255
                     
-    # Dummy result
-    # image_array = np.zeros((500, 500, 3))
 
     # Save the output image
     save_image(image_array, args.output_image)
