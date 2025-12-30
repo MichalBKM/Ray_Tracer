@@ -205,7 +205,6 @@ def trace_ray(ray, depth, surfaces, lights, materials, scene_settings):
     return np.clip(local_color + reflection_color, 0, 1)
 
 
-
 # local shading only: diffuse, specular, shadows
 # no reflections, no recursion
 def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
@@ -238,12 +237,13 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
         total_diffuse += diff
         total_specular += spec
 
+    ''' 
     # reflection_color = compute_reflection_color(ray, P, N, mat, surfaces, lights, scene_settings, 0, materials) 
-    
     # where does light_intensity come from?
-    ''' output_color = (scene_settings.background_color * np.array(mat.transparency) 
+    output_color = (scene_settings.background_color * np.array(mat.transparency) 
                     + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
-                    + reflection_color)'''
+                    + reflection_color)
+    '''
     
     # return np.clip(output_color, 0.0, 1.0)
     return total_diffuse + total_specular
