@@ -1,0 +1,35 @@
+# ---------- Camera ----------
+cam -2 3 7    0 1 0    0 1 0    1  2
+
+# ---------- Scene settings ----------
+set 0.1 0.1 0.1   5   6
+
+# ---------- Materials ----------
+# Material 1: Hot Pink (Glossy)
+mtl 1.0 0.4 0.7   0.6 0.6 0.6   0.2 0.2 0.2   50   0
+
+# Material 2: Emerald Green (Reflective Floor)
+mtl 0.1 0.6 0.2   0.4 0.4 0.4   0.3 0.3 0.3   30   0
+
+# Material 3: Teal (Matte Box) - FIXED COLOR
+mtl 0.0 0.75 0.85   0.2 0.2 0.2   0 0 0         10   0
+
+# Material 4: Chrome (Mirror Sphere)
+mtl 0.1 0.1 0.1   1.0 1.0 1.0   0.9 0.9 0.9   100  0
+
+# ---------- Objects ----------
+# The Pink Ball (Material 1)
+sph -0.5 1 0    1    1
+
+# The Mirror Ball (Material 4)
+sph -2.5 0.5 1  0.5  4
+
+# The Teal Box (Material 3)
+box 5.0 0.5 0.5   3.0   3
+
+# The Green Reflective Floor (Material 2)
+pln 0 1 0        0    2
+
+# ---------- Light ----------
+lgt 5 8 5        1 1 1    1   1   1
+lgt -5 3 2       0.4 0.4 0.6  1   1   1
