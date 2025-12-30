@@ -141,45 +141,8 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     
     return intensity
 
-def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
-    _, P, N = first_hit
 
-    mat_diffuse = np.array(mat.diffuse_color)
-    mat_specular = np.array(mat.specular_color)
-
-    total_diffuse = np.zeros(3)
-    total_specular = np.zeros(3)
-
-    V = normalize(np.array(-ray.direction))
-
-    for lgt in lights:        
-        # Case_1: there is a hit
-        L = normalize(np.array(lgt.position) - P)
-        lgt_color = np.array(lgt.color)
-
-        # Compute Light Intensity
-        light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surf, surfaces)
-
-        # diffuse component
-        diff = mat_diffuse * lgt_color * max(0, np.dot(N, L)) * light_intensity
-
-        # specular component
-        R = normalize(2 * np.dot(N, L) * N - L)
-        rv = np.dot(R, V)
-        spec = mat_specular * lgt_color * lgt.specular_intensity * (max(rv, 0.0) ** mat.shininess)
-        spec = spec * light_intensity
-        total_diffuse += diff
-        total_specular += spec
-
-    reflection_color = compute_reflection_color(ray, P, N, mat, surfaces, lights, scene_settings, 0, materials) 
-    
-    # where does light_intensity come from?
-    output_color = (scene_settings.background_color * np.array(mat.transparency) 
-                    + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
-                    + mat.reflection_color)
-    
-    return np.clip(output_color, 0.0, 1.0)
-
+'''
 # TODO: Implement reflection color computation
 def compute_reflection_color(ray, hit_point, normal, mat, surfaces, lights, scene_settings, depth, materials):
     # 1. Check recursion limit 
@@ -210,7 +173,80 @@ def compute_reflection_color(ray, hit_point, normal, mat, surfaces, lights, scen
 
     # 7. Multiply by reflection color coefficient 
     return reflected_rgb * np.array(mat.reflection_color)
+'''
 
+def trace_ray(ray, depth, surfaces, lights, materials, scene_settings):
+    # first case: check recursion limit
+    if depth >= scene_settings.max_recursions:
+        return np.array(scene_settings.background_color)
+
+    # second case: find first intersection, if none, return background color
+    hit, surf = find_first_intersection(ray, surfaces)
+    if hit is None:
+        return np.array(scene_settings.background_color)
+
+    mat = materials[surf.material_index - 1]
+
+    local_color = compute_color(ray, hit, surf, lights, mat, scene_settings, surfaces)
+
+    # reflection
+    if np.any(mat.reflection_color):
+        _, P, N = hit
+        # reflection: R = V - 2(V · N)N
+        R = normalize(ray.direction - 2 * np.dot(ray.direction, N) * N)
+        # new ray origin: the hit point + EPS in the reflection direction
+        reflection_ray = Ray(P + EPS * R, R)
+        reflection_color = (trace_ray(reflection_ray, depth + 1,
+                            surfaces, lights, materials, scene_settings)
+                            * mat.reflection_color)
+    else:
+        reflection_color = np.zeros(3)
+
+    return np.clip(local_color + reflection_color, 0, 1)
+
+
+
+# local shading only: diffuse, specular, shadows
+# no reflections, no recursion
+def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
+    _, P, N = first_hit
+
+    mat_diffuse = np.array(mat.diffuse_color)
+    mat_specular = np.array(mat.specular_color)
+
+    total_diffuse = np.zeros(3)
+    total_specular = np.zeros(3)
+
+    V = normalize(np.array(-ray.direction))
+
+    for lgt in lights:        
+        # Case_1: there is a hit
+        L = normalize(np.array(lgt.position) - P)
+        lgt_color = np.array(lgt.color)
+
+        # Compute Light Intensity
+        light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surf, surfaces)
+
+        # diffuse component
+        diff = mat_diffuse * lgt_color * max(0, np.dot(N, L)) * light_intensity
+
+        # specular component
+        R = normalize(2 * np.dot(N, L) * N - L)
+        rv = np.dot(R, V)
+        spec = mat_specular * lgt_color * lgt.specular_intensity * (max(rv, 0.0) ** mat.shininess)
+        spec = spec * light_intensity
+        total_diffuse += diff
+        total_specular += spec
+
+    # reflection_color = compute_reflection_color(ray, P, N, mat, surfaces, lights, scene_settings, 0, materials) 
+    
+    # where does light_intensity come from?
+    ''' output_color = (scene_settings.background_color * np.array(mat.transparency) 
+                    + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
+                    + reflection_color)'''
+    
+    # return np.clip(output_color, 0.0, 1.0)
+    return total_diffuse + total_specular
 
 
 def main():
@@ -253,7 +289,8 @@ def main():
             
             # TODO: Compute the color of the pixel
             material = materials[surf.material_index - 1]
-            color = compute_color(ray, hit, surf, lights, material, scene_settings, surfaces)
+            # color = compute_color(ray, hit, surf, lights, material, scene_settings, surfaces)
+            color = trace_ray(ray, 0, surfaces, lights, materials, scene_settings)
             image_array[i,j] = color * 255
                     
 
