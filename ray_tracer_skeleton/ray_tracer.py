@@ -71,6 +71,14 @@ def find_first_intersection(ray, surfaces):
 
     return first_hit, first_surf
 
+def get_transparency_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
+    _, P, _ = hit
+    if mat.transparency > 0:
+        transp_ray = Ray(P + EPS * ray.direction, ray.direction)
+        transp_color = get_color_recursive(transp_ray, depth +1, surfaces, lights, materials, scene_settings)
+        return transp_color
+    return np.zeros(3)
+
 def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
     if np.any(mat.reflection_color):
         _, P, N = hit
@@ -204,7 +212,15 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings)
     # reflection
     reflection_color = get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
 
-    return np.clip(local_color + reflection_color, 0, 1)
+    # transparency
+    trnsp_color = get_transparency_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
+
+    #Compute_Final_Color
+    output_color = (mat.transparency * trnsp_color 
+                    + local_color * (1 - mat.transparency) 
+                    + reflection_color) 
+
+    return np.clip(output_color, 0, 1)
 
 
 def main():
