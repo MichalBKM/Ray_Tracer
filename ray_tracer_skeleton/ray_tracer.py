@@ -71,6 +71,21 @@ def find_first_intersection(ray, surfaces):
 
     return first_hit, first_surf
 
+def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
+    if np.any(mat.reflection_color):
+        _, P, N = hit
+        # reflection: R = V - 2(V · N)N
+        R = normalize(ray.direction - 2 * np.dot(ray.direction, N) * N)
+        # new ray origin: the hit point + EPS in the reflection direction
+        reflection_ray = Ray(P + EPS * R, R)
+        reflection_color = (get_color_recursive(reflection_ray, depth + 1,
+                            surfaces, lights, materials, scene_settings)
+                            * mat.reflection_color)
+    else:
+        reflection_color = np.zeros(3)
+
+    return reflection_color
+
 def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
 
     direction = lgt_point - hit_point
@@ -92,28 +107,24 @@ def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
 
 def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     # Direction from the center of the light to the hit point on the surface 
-    # We treat the vector from the light to the point as the center of our projection
+
     L = hit_point - lgt.position
     L_norm = normalize(L)
     
     # Find a plane perpendicular to the ray L_norm 
-    # We need two vectors (u, v) that are perpendicular to L_norm and each other
-    # Start by picking an arbitrary vector that isn't parallel to L_norm
     temp_vec = np.array([1, 0, 0]) if abs(L_norm[0]) < 0.9 else np.array([0, 1, 0])
     u = normalize(np.cross(L_norm, temp_vec)) # First perpendicular vector 
     v = normalize(np.cross(L_norm, u))        # Second perpendicular vector 
     
     # Setup the grid 
     N = int(root_shadow_rays)
-    # The light radius/width defines the rectangle size
     cell_size = lgt.radius / N 
     
-    # Calculate the bottom-left corner of the light rectangle 
-    # (Subtract half the total width/height from the center)
+    #  Position of the bottom-left corner of the light rectangle
     bottom_left = lgt.position - (lgt.radius / 2) * u - (lgt.radius / 2) * v
     
     hits = 0
-    total_rays = N * N # Total number of rays cast is N^2 
+    total_rays = N * N 
     
     # Iterate through the NxN grid
     for i in range(N):
@@ -141,73 +152,9 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     
     return intensity
 
-
-'''
-# TODO: Implement reflection color computation
-def compute_reflection_color(ray, hit_point, normal, mat, surfaces, lights, scene_settings, depth, materials):
-    # 1. Check recursion limit 
-    if depth >= scene_settings.max_recursions:
-        return np.array(scene_settings.background_color)  
-
-    # 2. Check if the material is actually reflective [cite: 33]
-    if np.all(np.array(mat.reflection_color) == 0):
-        return np.zeros(3)
-
-    # 3. Calculate reflection direction [cite: 109]
-    D = ray.direction
-    R_dir = normalize(D - 2 * np.dot(D, normal) * normal)
-
-    # 4. Construct reflection ray with epsilon offset [cite: 120]
-    reflection_ray = Ray(hit_point + R_dir * EPS, R_dir)
-
-    # 5. Find what the reflection ray hits
-    hit, surf_hit = find_first_intersection(reflection_ray, surfaces)
-
-    if hit is None:
-        # Hits nothing: return background color 
-        return np.array(scene_settings.background_color)
-
-    # 6. Recursive call to get the color of the reflected object [cite: 77]
-    mat_hit = materials[surf_hit.material_index - 1]
-    reflected_rgb = compute_color(reflection_ray, hit, surf_hit, lights, mat_hit, scene_settings, surfaces, depth + 1)
-
-    # 7. Multiply by reflection color coefficient 
-    return reflected_rgb * np.array(mat.reflection_color)
-'''
-
-def trace_ray(ray, depth, surfaces, lights, materials, scene_settings):
-    # first case: check recursion limit
-    if depth >= scene_settings.max_recursions:
-        return np.array(scene_settings.background_color)
-
-    # second case: find first intersection, if none, return background color
-    hit, surf = find_first_intersection(ray, surfaces)
-    if hit is None:
-        return np.array(scene_settings.background_color)
-
-    mat = materials[surf.material_index - 1]
-
-    local_color = compute_color(ray, hit, surf, lights, mat, scene_settings, surfaces)
-
-    # reflection
-    if np.any(mat.reflection_color):
-        _, P, N = hit
-        # reflection: R = V - 2(V · N)N
-        R = normalize(ray.direction - 2 * np.dot(ray.direction, N) * N)
-        # new ray origin: the hit point + EPS in the reflection direction
-        reflection_ray = Ray(P + EPS * R, R)
-        reflection_color = (trace_ray(reflection_ray, depth + 1,
-                            surfaces, lights, materials, scene_settings)
-                            * mat.reflection_color)
-    else:
-        reflection_color = np.zeros(3)
-
-    return np.clip(local_color + reflection_color, 0, 1)
-
-
 # local shading only: diffuse, specular, shadows
 # no reflections, no recursion
-def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
+def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     _, P, N = first_hit
 
     mat_diffuse = np.array(mat.diffuse_color)
@@ -237,16 +184,27 @@ def compute_color(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
         total_diffuse += diff
         total_specular += spec
 
-    ''' 
-    # reflection_color = compute_reflection_color(ray, P, N, mat, surfaces, lights, scene_settings, 0, materials) 
-    # where does light_intensity come from?
-    output_color = (scene_settings.background_color * np.array(mat.transparency) 
-                    + (total_diffuse + total_specular) * (1 - np.array(mat.transparency))
-                    + reflection_color)
-    '''
-    
     # return np.clip(output_color, 0.0, 1.0)
     return total_diffuse + total_specular
+
+def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings):
+    # first case: check recursion limit
+    if depth >= scene_settings.max_recursions:
+        return np.array(scene_settings.background_color)
+
+    # second case: find first intersection, if none, return background color
+    hit, surf = find_first_intersection(ray, surfaces)
+    if hit is None:
+        return np.array(scene_settings.background_color)
+
+    mat = materials[surf.material_index - 1]
+
+    local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
+
+    # reflection
+    reflection_color = get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
+
+    return np.clip(local_color + reflection_color, 0, 1)
 
 
 def main():
@@ -286,11 +244,8 @@ def main():
             if hit is None or surf is None:
                 image_array[i, j] = np.array(scene_settings.background_color) * 255
                 continue
-            
-            # TODO: Compute the color of the pixel
-            material = materials[surf.material_index - 1]
-            # color = compute_color(ray, hit, surf, lights, material, scene_settings, surfaces)
-            color = trace_ray(ray, 0, surfaces, lights, materials, scene_settings)
+                        # TODO: Compute the color of the pixel
+            color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
             image_array[i,j] = color * 255
                     
 
