@@ -18,7 +18,7 @@ class InfinitePlane(Surface):
         if abs(denom) < EPS:
             return None
     
-        t = -(np.dot(norm, origin) + self.offset) / denom
+        t = (-np.dot(norm, origin) + self.offset) / denom
         if t < EPS:
             return None
         
