@@ -9,7 +9,7 @@ class InfinitePlane(Surface):
         self.material_index = material_index
     
     def intersection(self, ray):
-        # t = -(P0 • N + d) / (V • N)
+        
         norm = np.array(self.normal)
         origin = np.array(ray.origin)
         direction = np.array(ray.direction)
@@ -17,7 +17,8 @@ class InfinitePlane(Surface):
         denom = np.dot(norm, direction)
         if abs(denom) < EPS:
             return None
-    
+        
+        # t = (d - P0 • N) / (V • N)
         t = (-np.dot(norm, origin) + self.offset) / denom
         if t < EPS:
             return None
