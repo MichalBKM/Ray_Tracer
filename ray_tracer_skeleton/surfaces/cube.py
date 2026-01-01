@@ -4,26 +4,25 @@ from utils import EPS
 
 class Cube(Surface):
     def __init__(self, position, scale, material_index):
-        self.position = position # Cube center
-        self.scale = scale # Edge length
+        self.position = position 
+        self.scale = scale 
         self.material_index = material_index
     
-    # TODO: Implement the intersection method
     def intersection(self, ray):
-        origin = ray.origin          # Starting point of the Ray which is a numpy array [ox, oy, oz]
-        direction = ray.direction    # Direction vector also a numpy array [dx, dy, dz]
+        origin = ray.origin          
+        direction = ray.direction 
 
-        # 1. Compute cube bounds from center and scale
+        # 1. Define axis boundaries
         half = self.scale / 2.0
         pos_array = np.array(self.position)
-        min_bound = pos_array - half   # [min_x, min_y, min_z]
-        max_bound = pos_array + half   # [max_x, max_y, max_z]
+        min_bound = pos_array - half  
+        max_bound = pos_array + half  
 
         t_min = -np.inf   
         t_max =  np.inf   
 
         # 2. Slab method per axis
-        for axis in range(3):  # 0=x, 1=y, 2=z
+        for axis in range(3):  
             o = origin[axis]
             d = direction[axis]
             slab_min = min_bound[axis]
@@ -36,24 +35,24 @@ class Cube(Surface):
                 # else: Move to the next axis 
                 continue
 
-            # Where does the ray hit the two planes on this axis
+            # Calculate distances to near and far planes
             t1 = (slab_min - o) / d
             t2 = (slab_max - o) / d
 
             t_near = min(t1, t2)
             t_far  = max(t1, t2)
 
-            # Update global interval by crossing them
+            
             t_min = max(t_min, t_near)
             t_max = min(t_max, t_far)
 
-            # no valid interval -> no intersection
+            # no valid interval means no Intersection
             if t_min > t_max:
                 return None
 
-        # 3. Check that the intersection is in front of the ray origin
+        # 3. Ignore hits behind the Ray
         if t_max < EPS:
-            return None  # whole box is behind the ray
+            return None 
 
         # If we start outside the cube, t_min>0 is the entry point.
         # If we start inside, t_min<=0 and t_max is the exit point.
