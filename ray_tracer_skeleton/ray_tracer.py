@@ -56,22 +56,6 @@ def save_image(image_array, output_path):
     image.save(output_path)
 
 # find the first intersection of the ray with any of the surfaces
-'''
-def find_first_intersection(ray, surfaces):
-    first_hit = None
-    first_surf = None
-    for surf in surfaces:
-                hit = surf.intersection(ray)
-                if hit is not None:
-                    t = hit[0]
-                    if t < 0:
-                        continue
-                    elif  first_hit is None or t < first_hit[0]:
-                        first_hit = hit
-                        first_surf = surf
-
-    return first_hit, first_surf
-'''
 
 def find_first_intersection(ray, surfaces, ignore_surface=None):
     first_hit = None
@@ -86,16 +70,6 @@ def find_first_intersection(ray, surfaces, ignore_surface=None):
                 first_hit = hit
                 first_surf = surf
     return first_hit, first_surf
-
-'''
-def get_transparency_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
-    _, P, _ = hit
-    if mat.transparency > 0:
-        transp_ray = Ray(P + EPS * ray.direction, ray.direction)
-        transp_color = get_color_recursive(transp_ray, depth +1, surfaces, lights, materials, scene_settings)
-        return transp_color
-    return np.zeros(3)
-'''
 
 def get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings, depth, materials):
     if mat.transparency <= 0:
@@ -236,7 +210,6 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
 
     mat = materials[surf.material_index - 1]
 
-    ''' local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)'''
     if mat.transparency < 1:
         local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
     else:
