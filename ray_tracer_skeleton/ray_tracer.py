@@ -236,7 +236,7 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
 
     mat = materials[surf.material_index - 1]
 
-    # local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
+    ''' local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)'''
     if mat.transparency < 1:
         local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
     else:
@@ -296,7 +296,7 @@ def main():
                 continue
                         # TODO: Compute the color of the pixel
             '''
-            color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings, ignore_surface=None)
+            color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
             image_array[i,j] = color * 255
                     
 
