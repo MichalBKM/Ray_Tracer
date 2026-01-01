@@ -1,0 +1,28 @@
+# Fixed Transparent Pyramid (Strict PDF Format)
+cam 0 5 12 0 2 0 0 1 0 1 2
+
+# Background: Light Blue
+set 0.6 0.8 1.0 3 6
+
+# Material 1: Grey Floor (Opaque)
+mtl 0.4 0.4 0.4 0.2 0.2 0.2 0 0 0 10 0
+
+# Materials 2-5: Transparent Marbles (Transparency 0.8)
+# Diffuse | Specular | Reflection | Shininess | Transparency
+mtl 0.7 0.1 0.1 1.0 1.0 1.0 0.3 0.3 0.3 100 0.8
+mtl 0.1 0.7 0.1 1.0 1.0 1.0 0.3 0.3 0.3 100 0.8
+mtl 0.1 0.1 0.7 1.0 1.0 1.0 0.3 0.3 0.3 100 0.8
+mtl 0.7 0.7 0.1 1.0 1.0 1.0 0.3 0.3 0.3 100 0.8
+
+# --- Pyramid Structure ---
+# Base
+sph -1.6 1.5 0.0 1.5 2
+sph 1.6 1.5 0.0 1.5 3
+sph 0.0 1.5 -2.5 1.5 4
+# Top
+sph 0.0 4.0 -0.8 1.5 5
+
+pln 0 1 0 0 1
+
+lgt 10 15 10 1 1 1 1 1 1
+lgt -10 5 5 0.4 0.4 0.4 1 1 1

@@ -56,6 +56,7 @@ def save_image(image_array, output_path):
     image.save(output_path)
 
 # find the first intersection of the ray with any of the surfaces
+'''
 def find_first_intersection(ray, surfaces):
     first_hit = None
     first_surf = None
@@ -70,7 +71,23 @@ def find_first_intersection(ray, surfaces):
                         first_surf = surf
 
     return first_hit, first_surf
+'''
 
+def find_first_intersection(ray, surfaces, ignore_surface=None):
+    first_hit = None
+    first_surf = None
+    for surf in surfaces:
+        if surf is ignore_surface:
+            continue
+        hit = surf.intersection(ray)
+        if hit is not None:
+            t = hit[0]
+            if t > EPS and (first_hit is None or t < first_hit[0]):
+                first_hit = hit
+                first_surf = surf
+    return first_hit, first_surf
+
+'''
 def get_transparency_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
     _, P, _ = hit
     if mat.transparency > 0:
@@ -78,6 +95,18 @@ def get_transparency_color(ray, hit, mat, surfaces, lights, scene_settings, dept
         transp_color = get_color_recursive(transp_ray, depth +1, surfaces, lights, materials, scene_settings)
         return transp_color
     return np.zeros(3)
+'''
+
+def get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings, depth, materials):
+    if mat.transparency <= 0:
+        return np.zeros(3)
+
+    _, P, _ = hit
+    transp_ray = Ray(P + EPS * ray.direction, ray.direction)
+
+    return get_color_recursive( transp_ray, depth + 1, surfaces, lights, materials, scene_settings, ignore_surface=surf)
+
+
 
 def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
     if np.any(mat.reflection_color):
@@ -95,7 +124,6 @@ def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth,
     return reflection_color
 
 def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
-
     direction = lgt_point - hit_point
     distance_to_light = np.linalg.norm(direction)
     direction = normalize(direction)
@@ -195,25 +223,30 @@ def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surface
     # return np.clip(output_color, 0.0, 1.0)
     return total_diffuse + total_specular
 
-def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings):
+
+def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings, ignore_surface=None):
     # first case: check recursion limit
     if depth >= scene_settings.max_recursions:
         return np.array(scene_settings.background_color)
 
     # second case: find first intersection, if none, return background color
-    hit, surf = find_first_intersection(ray, surfaces)
+    hit, surf = find_first_intersection(ray, surfaces, ignore_surface)
     if hit is None:
         return np.array(scene_settings.background_color)
 
     mat = materials[surf.material_index - 1]
 
-    local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
+    # local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
+    if mat.transparency < 1:
+        local_color = get_local_shading(ray, hit, surf, lights, mat, scene_settings, surfaces)
+    else:
+        local_color = np.zeros(3)
 
     # reflection
     reflection_color = get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
 
     # transparency
-    trnsp_color = get_transparency_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
+    trnsp_color = get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings, depth, materials)
 
     #Compute_Final_Color
     output_color = (mat.transparency * trnsp_color 
@@ -257,11 +290,13 @@ def main():
             
             #Check Intersection of the ray with all surfaces in the scene
             hit, surf = find_first_intersection(ray, surfaces)
+            '''
             if hit is None or surf is None:
                 image_array[i, j] = np.array(scene_settings.background_color) * 255
                 continue
                         # TODO: Compute the color of the pixel
-            color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
+            '''
+            color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings, ignore_surface=None)
             image_array[i,j] = color * 255
                     
 
