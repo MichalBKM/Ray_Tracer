@@ -18,11 +18,11 @@ class Camera:
         self.forward = normalize(self.forward) 
 
         # RIGHT direction: calculation + normalization
-        self.right = np.cross(self.forward, self.up_vector)
+        self.right = np.cross(self.up_vector, self.forward)
         self.right = normalize(self.right)
 
         # UP direction: calculation + normalization
-        self.up = np.cross(self.right, self.forward)
+        self.up = np.cross(self.forward, self.right)
         self.up = normalize(self.up)
     
     def screen_geometry(self):
