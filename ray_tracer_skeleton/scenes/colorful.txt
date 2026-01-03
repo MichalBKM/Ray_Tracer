@@ -1,0 +1,59 @@
+# Camera setup: Slightly elevated angle view
+cam		8		5		10		0		0		0		0		1		0		1.6		1
+
+# Settings: Vibrant purple-pink background, 5 shadow rays, 6 recursions
+set		0.15		0.05		0.18		5		6
+
+# --- MATERIALS ---
+
+# MTL 1: Hot Pink Chrome (reflective)
+mtl		0.95	0.2	0.6	0.9	0.3	0.7	1.0	0.5	0.8	180	0
+
+# MTL 2: Neon Cyan Glass (transparent)
+mtl		0.2	0.9	1.0	0.4	1.0	1.0	0.6	0.8	1.0	140	0.8
+
+# MTL 3: Electric Lime (glossy)
+mtl		0.6	1.0	0.2	0.7	0.9	0.4	0.5	0.7	0.3	90	0
+
+# MTL 4: Vivid Orange Metal
+mtl		1.0	0.5	0.1	0.95	0.6	0.2	0.8	0.5	0.1	160	0
+
+# MTL 5: Magenta Crystal (transparent)
+mtl		0.9	0.2	0.8	0.8	0.3	0.9	0.6	0.4	0.7	120	0.7
+
+# MTL 6: Glossy Rainbow Floor
+mtl		0.3	0.2	0.4	0.7	0.5	0.8	0.9	0.7	1.0	200	0
+
+# --- OBJECTS ---
+
+# Glossy rainbow floor
+pln		0	1	0	-2	6
+
+# Large neon cyan glass planet (center)
+sph		0	1	0	3.0	2
+
+# Hot pink chrome moon (left)
+sph		-4	0.5	3	1.8	1
+
+# Vivid orange metallic sphere (right)
+sph		5	-0.5	-2	2.2	4
+
+# Electric lime box (back left)
+box		-5	2	-3	1.2	3
+
+# Tall magenta crystal pillar (front right)
+box		3	0	5	0.8	5
+
+# --- LIGHTS ---
+
+# Light 1: Bright cyan-white star
+lgt		10	8	6	0.8	1.0	1.0	1.0	0.8	0.9
+
+# Light 2: Intense magenta glow
+lgt		-8	6	4	1.0	0.2	0.9	0.8	0.7	0.7
+
+# Light 3: Lime green accent
+lgt		0	12	-2	0.5	1.0	0.3	0.6	0.6	0.5
+
+# Light 4: Hot orange rim
+lgt		6	3	8	1.0	0.4	0.1	0.7	0.7	0.6

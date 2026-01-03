@@ -260,9 +260,19 @@ def main():
     # Parse the scene file
     camera, scene_settings, surfaces, lights, materials = parse_scene_file(args.scene_file)
     
+    # prints for debugging
+    print("Scene loaded successfully")
+    print(f"  Surfaces: {len(surfaces)}")
+    print(f"  Lights: {len(lights)}")
+    print(f"  Materials: {len(materials)}")
+
     # get the image size
     image_width = args.width
     image_height = args.height
+
+    # prints for debugging
+    print(f"Rendering image of size {image_width} x {image_height}")
+
     aspect_ratio = image_width / image_height
     camera = Camera(camera.position, camera.look_at, camera.up_vector, camera.screen_distance, camera.screen_width, aspect_ratio)
     
@@ -273,6 +283,9 @@ def main():
 
     image_array = np.zeros((image_height, image_width, 3))
     for i in range(image_height):
+        # prints for debugging
+        if i % 10 == 0:
+            print(f"Rendering row {i+1} of {image_height}")
         for j in range(image_width):
             # Discover pixel's screen location
             pixel_point = (top_left + 
@@ -291,9 +304,13 @@ def main():
             color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
             image_array[i,j] = color * 255
                     
-
+    # print for debugging
+    print("Rendering finished, saving image...")
     # Save the output image
     save_image(image_array, args.output_image)
+
+    # print for debugging
+    print("Image saved successfully")
 
     
 if __name__ == '__main__':
