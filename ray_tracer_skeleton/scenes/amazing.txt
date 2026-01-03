@@ -1,174 +1,104 @@
-# Camera setup: Elevated dramatic angle
-cam 		-8		6		18		0		0		0		0		1		0		1.8		1
+# Camera setup: Standard view
+cam 		0		4		15		0		0		0		0		1		0		1.8		1
 
-# Settings: Deep twilight background, 6 shadow rays, 8 recursions for deep reflections
-set 		0.05	0.05	0.15	6	8
+# Settings: Dark background, 4 shadow rays, 6 recursions
+set 		0.1		0.1		0.15		4		6
 
 # --- MATERIALS ---
 
-# MTL 1: Floor (Glossy Black Marble)
-mtl		0.1	0.1	0.1	0.6	0.6	0.6	0.9	0.9	0.9	150	0
+# MTL 1: Glossy Floor
+mtl		0.3	0.3	0.3	0.4	0.4	0.4	0.3	0.3	0.3	50	0
 
-# MTL 2: Perfect Chrome Mirror
-mtl		0.05	0.05	0.05	0.9	0.9	0.9	1.0	1.0	1.0	200	0
+# MTL 2: Chrome Mirror
+mtl		0.1	0.1	0.1	0.8	0.8	0.8	0.9	0.9	0.9	150	0
 
-# MTL 3: Ruby Glass (Deep Red Transparency)
-mtl		0.8	0.1	0.1	1.0	0.3	0.3	0.4	0.4	0.4	120	0.85
+# MTL 3: Red Glass
+mtl		0.7	0.1	0.1	0.8	0.2	0.2	0.3	0.3	0.3	100	0.7
 
-# MTL 4: Sapphire Glass (Deep Blue Transparency)
-mtl		0.1	0.1	0.9	0.3	0.3	1.0	0.4	0.4	0.4	120	0.85
+# MTL 4: Blue Glass
+mtl		0.1	0.1	0.8	0.2	0.2	0.9	0.3	0.3	0.3	100	0.7
 
-# MTL 5: Emerald Glass (Deep Green Transparency)
-mtl		0.1	0.8	0.1	0.3	1.0	0.3	0.4	0.4	0.4	120	0.85
+# MTL 5: Green Glass
+mtl		0.1	0.7	0.1	0.2	0.8	0.2	0.3	0.3	0.3	100	0.7
 
-# MTL 6: Amber Glass (Gold Transparency)
-mtl		0.9	0.7	0.1	1.0	0.8	0.3	0.4	0.4	0.4	120	0.85
+# MTL 6: Yellow Glass
+mtl		0.8	0.7	0.1	0.9	0.8	0.2	0.3	0.3	0.3	100	0.7
 
-# MTL 7: Amethyst Glass (Purple Transparency)
-mtl		0.7	0.1	0.9	0.8	0.3	1.0	0.4	0.4	0.4	120	0.85
+# MTL 7: Purple Glass
+mtl		0.7	0.1	0.8	0.8	0.2	0.9	0.3	0.3	0.3	100	0.7
 
-# MTL 8: Cyan Glass (Aqua Transparency)
-mtl		0.1	0.9	0.9	0.3	1.0	1.0	0.4	0.4	0.4	120	0.85
+# MTL 8: Cyan Glass
+mtl		0.1	0.8	0.8	0.2	0.9	0.9	0.3	0.3	0.3	100	0.7
 
-# MTL 9: Vibrant Matte Coral
-mtl		1.0	0.4	0.4	0.3	0.3	0.3	0	0	0	15	0
+# MTL 9: Matte Orange
+mtl		0.9	0.5	0.2	0.3	0.3	0.3	0	0	0	20	0
 
-# MTL 10: Vibrant Matte Magenta
-mtl		1.0	0.2	0.8	0.3	0.3	0.3	0	0	0	15	0
+# MTL 10: Matte Pink
+mtl		0.9	0.3	0.6	0.3	0.3	0.3	0	0	0	20	0
 
-# MTL 11: Vibrant Matte Lime
-mtl		0.6	1.0	0.2	0.3	0.3	0.3	0	0	0	15	0
+# MTL 11: Matte Lime
+mtl		0.6	0.9	0.2	0.3	0.3	0.3	0	0	0	20	0
 
-# MTL 12: Vibrant Matte Orange
-mtl		1.0	0.6	0.1	0.3	0.3	0.3	0	0	0	15	0
-
-# MTL 13: Clear Crystal Glass (High transparency)
-mtl		0.05	0.05	0.05	1.0	1.0	1.0	0.5	0.5	0.5	150	0.95
-
-# MTL 14: Rose Gold Metallic
-mtl		0.9	0.6	0.5	0.7	0.4	0.3	0.8	0.6	0.5	180	0
-
-# MTL 15: Iridescent Cyan-Pink
-mtl		0.3	0.8	0.9	0.9	0.4	0.7	0.6	0.6	0.6	100	0
+# MTL 12: Clear Glass
+mtl		0.05	0.05	0.05	1.0	1.0	1.0	0.4	0.4	0.4	120	0.9
 
 # --- OBJECTS ---
 
-# Glossy reflective floor
+# Floor
 pln		0	1	0	-2	1
 
-# === BACKGROUND MONUMENTALS ===
+# Back wall mirror sphere
+sph		0	2	-6	3	2
 
-# Giant Chrome Mirror Sphere (Center Back)
-sph		0	3	-8	4.5	2
+# Large foreground spheres
+sph		-4	0	2	2	3
+sph		4	0	2	2	5
+sph		0	-1	4	1.5	12
 
-# Tall Ruby Glass Pillar (Left Back)
-sph		-6	1	-6	2.5	3
+# Mid-height cluster
+sph		-3	1	0	1.2	4
+sph		3	1	0	1.2	6
+sph		0	2	-2	1	7
 
-# Giant Emerald Crystal (Right Back)
-sph		6	0	-7	3	5
+# Floating spheres
+sph		-2	4	1	0.9	8
+sph		2	4.5	0	0.8	3
+sph		0	5	-1	0.7	9
 
-# Mirror Cube (Far Left)
-box		-10	-0.5	-5	3	2
+# Ground scatter - small
+sph		-5	-1.5	5	0.6	10
+sph		-3	-1.6	6	0.5	11
+sph		-1	-1.7	7	0.4	9
+sph		1	-1.6	6	0.5	10
+sph		3	-1.5	7	0.6	11
+sph		5	-1.6	5	0.5	9
 
-# === FLOATING CRYSTAL CONSTELLATION ===
+# Ground scatter - medium
+sph		-6	-1	3	1	4
+sph		-4	-1.2	5	0.8	5
+sph		-2	-0.8	3	1.2	7
+sph		2	-1	4	1	8
+sph		4	-1.2	5	0.8	3
+sph		6	-0.9	3	1.1	6
 
-# High floaters - Clear and colored glass
-sph		-3	8	-2	1.2	13
-sph		2	9	0	0.9	4
-sph		0	10	-4	1.0	8
-sph		4	7.5	-1	0.8	7
-sph		-1	8.5	1	0.7	6
+# Tiny accents
+sph		-1	-1.8	9	0.3	10
+sph		0	-1.9	8	0.2	11
+sph		1	-1.8	9	0.3	9
 
-# Mid-height floaters
-sph		-5	5	2	1.5	5
-sph		3	5.5	3	1.3	3
-sph		-2	6	4	1.0	15
-sph		1	4.5	-3	1.1	14
-
-# === GROUND GARDEN (Multiple Heights & Sizes) ===
-
-# Small matte gems scattered low
-sph		-7	-1.7	6	0.4	9
-sph		-6	-1.8	8	0.3	10
-sph		-5	-1.6	4	0.5	11
-sph		-4	-1.7	7	0.4	12
-
-# Medium transparent cluster (Left)
-sph		-8	-1	3	1.2	4
-sph		-7	-1.3	5	0.9	8
-sph		-6	-0.5	2	1.5	3
-
-# Large centerpiece spheres
-sph		-3	-0.5	1	2.0	5
-sph		0	0	0	2.5	13
-sph		3	-0.8	2	1.8	6
-
-# Right side transparent cascade
-sph		7	-1.2	5	1.1	7
-sph		6	-1.5	7	0.8	4
-sph		5	-0.8	3	1.4	3
-sph		8	-1.7	8	0.6	8
-
-# Right matte scatter
-sph		4	-1.6	9	0.5	12
-sph		5	-1.8	10	0.3	9
-sph		6	-1.7	6	0.4	11
-sph		7	-1.6	9	0.5	10
-
-# === FOREGROUND FEATURES ===
-
-# Close left - Metallic rose gold
-sph		-4	-1	8	1.3	14
-
-# Close center - Large clear crystal
-sph		-1	-0.5	10	2.0	13
-
-# Close right - Iridescent sphere
-sph		2	-0.8	9	1.5	15
-
-# Tiny accent gems
-sph		-2	-1.8	12	0.3	9
-sph		0	-1.9	11	0.2	10
-sph		1	-1.8	13	0.25	12
-sph		3	-1.9	11	0.3	11
-
-# === DRAMATIC HEIGHT VARIATION ===
-
-# Very low spheres (almost buried)
-sph		-8	-1.9	10	0.4	4
-sph		8	-1.95	9	0.3	7
-
-# Mid-low spheres
-sph		-5	-1.3	9	0.8	3
-sph		5	-1.4	10	0.7	5
-
-# Elevated but grounded
-sph		-3	0.5	5	1.5	8
-sph		3	0.8	4	1.3	6
-
-# Medium-high spheres
-sph		-1	3	2	1.2	4
-sph		1	3.5	-1	1.0	7
+# Mirror cube
+box		-6	-1	-3	2	2
 
 # --- LIGHTS ---
 
-# Light 1: Magenta Key Light (High Right)
-lgt		12	15	8	1.0	0.3	0.8	1	1	0.3
+# Main white light
+lgt		8	10	8	0.9	0.9	0.9	1	1	0.4
 
-# Light 2: Cyan Fill Light (Left)
-lgt		-15	10	10	0.3	0.8	1.0	0.7	0.7	0.4
+# Magenta accent
+lgt		-8	8	6	0.8	0.2	0.6	0.6	0.6	0.5
 
-# Light 3: Golden Rim Light (Back)
-lgt		0	8	-12	1.0	0.9	0.4	0.8	0.3	0.6
+# Cyan fill
+lgt		6	6	10	0.2	0.6	0.8	0.5	0.5	0.6
 
-# Light 4: Green Accent (Low Left)
-lgt		-10	3	5	0.2	1.0	0.3	0.5	0.5	0.8
-
-# Light 5: Orange Warmth (Low Right)
-lgt		10	4	6	1.0	0.6	0.2	0.6	0.6	0.7
-
-# Light 6: Violet Mystery (Above center)
-lgt		0	12	0	0.6	0.2	1.0	0.9	0.2	0.5
-
-# Light 7: Soft Blue Ambient (Far back low)
-lgt		0	2	-15	0.3	0.4	0.8	0.4	0.4	0.9
+# Warm back light
+lgt		0	5	-8	0.7	0.5	0.3	0.7	0.3	0.5
