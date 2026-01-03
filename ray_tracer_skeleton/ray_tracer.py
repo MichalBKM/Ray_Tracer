@@ -58,19 +58,27 @@ def save_image(image_array, output_path):
 # find the first intersection of the ray with any of the surfaces
 
 def find_first_intersection(ray, surfaces, ignore_surface=None):
+    if ignore_surface is None:
+        ignore_surface = set()
+
     first_hit = None
     first_surf = None
+
     for surf in surfaces:
         if surf is ignore_surface:
             continue
+
         hit = surf.intersection(ray)
         if hit is not None:
             t = hit[0]
             if t > EPS and (first_hit is None or t < first_hit[0]):
                 first_hit = hit
                 first_surf = surf
+
     return first_hit, first_surf
 
+''' we cant use this function because we need to ignore multiple surfaces
+    instead we call get_color_recursive directly with ignore_surfaces set
 def get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings, depth, materials):
     if mat.transparency <= 0:
         return np.zeros(3)
@@ -79,8 +87,7 @@ def get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings
     transp_ray = Ray(P + EPS * ray.direction, ray.direction)
 
     return get_color_recursive( transp_ray, depth + 1, surfaces, lights, materials, scene_settings, ignore_surface=surf)
-
-
+'''
 
 def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
     if np.any(mat.reflection_color):
@@ -198,13 +205,16 @@ def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surface
     return total_diffuse + total_specular
 
 
-def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings, ignore_surface=None):
+def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings, ignore_surfaces=None):
+    if ignore_surfaces is None:
+        ignore_surfaces = set()
+    
     # first case: check recursion limit
     if depth >= scene_settings.max_recursions:
         return np.array(scene_settings.background_color)
 
     # second case: find first intersection, if none, return background color
-    hit, surf = find_first_intersection(ray, surfaces, ignore_surface)
+    hit, surf = find_first_intersection(ray, surfaces, ignore_surfaces)
     if hit is None:
         return np.array(scene_settings.background_color)
 
@@ -219,15 +229,24 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
     reflection_color = get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
 
     # transparency
-    trnsp_color = get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings, depth, materials)
+    transparency_color = np.zeros(3)
+    if mat.transparency > 0:
+        _, P, _ = hit
+        transp_ray = Ray(P + 5 * EPS * ray.direction, ray.direction)
 
-    #Compute_Final_Color
-    output_color = (mat.transparency * trnsp_color 
-                    + local_color * (1 - mat.transparency) 
-                    + reflection_color) 
+        new_ignore = set(ignore_surfaces)
+        new_ignore.add(surf)
+
+        transparency_color = get_color_recursive(transp_ray, depth + 1, surfaces, lights, materials, scene_settings, ignore_surfaces=new_ignore)
+
+    # combine all components
+    output_color = (
+        (1 - mat.transparency) * local_color
+        + mat.transparency * transparency_color
+        + reflection_color
+        )
 
     return np.clip(output_color, 0, 1)
-
 
 def main():
     random.seed(0)
