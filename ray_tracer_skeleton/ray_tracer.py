@@ -246,7 +246,7 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
         + reflection_color
         )
 
-    return np.clip(output_color, 0, 1)
+    return output_color
 
 def main():
     random.seed(0)
@@ -302,10 +302,13 @@ def main():
                         # TODO: Compute the color of the pixel
             '''
             color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
-            image_array[i,j] = color * 255
+            image_array[i,j] = color
                     
     # print for debugging
+    image_array = np.clip(image_array, 0, 1)
+    image_array = (image_array * 255).astype(np.uint8)
     print("Rendering finished, saving image...")
+    
     # Save the output image
     save_image(image_array, args.output_image)
 
