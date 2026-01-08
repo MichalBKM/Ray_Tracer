@@ -64,8 +64,8 @@ def find_first_intersection(ray, surfaces, ignore_surfaces=None):
     first_surf = None
 
     for surf in surfaces:
-        if surf in ignore_surfaces:
-            continue
+        #if surf is ignore_surfaces:
+            #continue
 
         hit = surf.intersection(ray)
         if hit is not None:
