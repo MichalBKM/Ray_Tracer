@@ -56,16 +56,15 @@ def save_image(image_array, output_path):
     image.save(output_path)
 
 # find the first intersection of the ray with any of the surfaces
-
-def find_first_intersection(ray, surfaces, ignore_surface=None):
-    if ignore_surface is None:
-        ignore_surface = set()
+def find_first_intersection(ray, surfaces, ignore_surfaces=None):
+    if ignore_surfaces is None:
+        ignore_surfaces = set()
 
     first_hit = None
     first_surf = None
 
     for surf in surfaces:
-        if surf is ignore_surface:
+        if surf in ignore_surfaces:
             continue
 
         hit = surf.intersection(ray)
