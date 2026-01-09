@@ -1,57 +1,40 @@
-# Camera setup
 cam		0	5	12	0	0	0	0	1	0	1.5	1
 
-# Settings
 set		0.1	0.05	0.15	1	2
 
 # --- MATERIALS ---
 
-# MTL 1: Dark Purple Floor
 mtl		0.15	0.05	0.20	0.25	0.15	0.30	0.20	0.10	0.25	30	0
 
-# MTL 2: Polished Silver
 mtl		0.75	0.75	0.75	0.90	0.90	0.90	0.85	0.85	0.85	180	0
 
-# MTL 3: Brushed Steel Grey
 mtl		0.60	0.62	0.65	0.75	0.77	0.80	0.70	0.72	0.75	140	0
 
-# MTL 4: Dark Gunmetal
 mtl		0.40	0.42	0.45	0.60	0.62	0.65	0.55	0.57	0.60	120	0
 
 # --- OBJECTS ---
 
-# Floor Plane (Dark Purple)
 pln		0	1	0	-2	1
 
-# Center Hero Sphere (Large Silver)
 sph		0	0	0	2.0	2
 
-# Circle Ring - 8 spheres arranged in circle (radius 5)
-# Angle 0° (East)
 sph		5	0	0	1.2	3
 
-# Angle 45° (Northeast)
 sph		3.54	0	-3.54	1.2	4
 
-# Angle 90° (North)
 sph		0	0	-5	1.2	2
 
-# Angle 135° (Northwest)
 sph		-3.54	0	-3.54	1.2	3
 
-# Angle 180° (West)
 sph		-5	0	0	1.2	4
 
-# Angle 225° (Southwest)
 sph		-3.54	0	3.54	1.2	2
 
-# Angle 270° (South)
 sph		0	0	5	1.2	3
 
-# Angle 315° (Southeast)
 sph		3.54	0	3.54	1.2	4
 
-# Outer Ring - 4 larger spheres (radius 8)
+
 sph		8	0.5	0	1.5	2
 
 sph		0	0.5	-8	1.5	3
@@ -61,12 +44,8 @@ sph		-8	0.5	0	1.5	4
 sph		0	0.5	8	1.5	2
 
 # --- LIGHTS ---
-
-# Light 1: Neutral Key Light
 lgt		-8	10	8	1.0	1.0	1.0	1.0	0.8	0.8
 
-# Light 2: Neutral Fill Light
 lgt		8	8	8	0.8	0.8	0.8	0.7	0.7	0.7
 
-# Light 3: Soft Backlight
 lgt		0	6	-10	0.6	0.6	0.6	0.5	0.5	0.5
