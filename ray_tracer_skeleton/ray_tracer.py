@@ -74,6 +74,7 @@ def find_first_intersection(ray, surfaces, ignore_surfaces=None):
 
     return first_hit, first_surf
 
+
 # Compute reflection color recursively
 def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
     if np.any(mat.reflection_color):
@@ -88,6 +89,7 @@ def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth,
     else:
         reflection_color = np.zeros(3)
     return reflection_color
+
 
 # Check if the light is occluded from the hit point
 def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
@@ -106,6 +108,7 @@ def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
             return True
 
     return False
+
 
 # Calculate light intensity at the hit point considering area light and shadows
 def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
@@ -151,6 +154,7 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     
     return intensity
 
+
 # Local shading only: diffuse, specular, shadows
 # No reflections, no recursion
 def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
@@ -184,6 +188,7 @@ def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surface
         total_specular += spec
 
     return total_diffuse + total_specular
+
 
 # Recursive color calculation: the main function for color computation
 def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings, ignore_surfaces=None):
@@ -242,18 +247,16 @@ def main():
     # Parse the scene file
     camera, scene_settings, surfaces, lights, materials = parse_scene_file(args.scene_file)
     
-    # Prints for debugging
-    print("Scene loaded successfully")
-    print(f"  Surfaces: {len(surfaces)}")
-    print(f"  Lights: {len(lights)}")
-    print(f"  Materials: {len(materials)}")
+    # print("Scene loaded successfully")
+    # print(f"  Surfaces: {len(surfaces)}")
+    # print(f"  Lights: {len(lights)}")
+    # print(f"  Materials: {len(materials)}")
 
     # Get the image size
     image_width = args.width
     image_height = args.height
 
-    # Prints for debugging
-    print(f"Rendering image of size {image_width} x {image_height}")
+    # print(f"Rendering image of size {image_width} x {image_height}")
 
     aspect_ratio = image_width / image_height
     camera = Camera(camera.position, camera.look_at, camera.up_vector, camera.screen_distance, camera.screen_width, aspect_ratio)
@@ -264,9 +267,8 @@ def main():
 
     image_array = np.zeros((image_height, image_width, 3))
     for i in range(image_height):
-        # Prints for debugging
-        if i % 10 == 0:
-            print(f"Rendering row {i+1} of {image_height}")
+        # if i % 10 == 0:
+            #print(f"Rendering row {i+1} of {image_height}")
         for j in range(image_width):
             # Discover pixel's screen location
             pixel_point = (top_left + 
@@ -279,16 +281,14 @@ def main():
             color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
             image_array[i,j] = color
                     
-    # Print for debugging
     image_array = np.clip(image_array, 0, 1)
     image_array = (image_array * 255).astype(np.uint8)
-    print("Rendering finished, saving image...")
+    # print("Rendering finished, saving image...")
     
     # Save the output image
     save_image(image_array, args.output_image)
 
-    # Print for debugging
-    print("Image saved successfully")
+    # print("Image saved successfully")
 
     
 if __name__ == '__main__':
