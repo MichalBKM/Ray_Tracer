@@ -1,7 +1,6 @@
 import argparse
 from PIL import Image
 import numpy as np
-
 from camera import Camera
 from light import Light
 from material import Material
@@ -55,7 +54,9 @@ def save_image(image_array, output_path):
     image = Image.fromarray(np.uint8(image_array))
     image.save(output_path)
 
-# find the first intersection of the ray with any of the surfaces
+
+# Find the first intersection of the ray with any of the surfaces
+# Ignores surfaces is used to skip certain surfaces (e.g., the one the ray originated from)
 def find_first_intersection(ray, surfaces, ignore_surfaces=None):
     if ignore_surfaces is None:
         ignore_surfaces = set()
@@ -64,9 +65,6 @@ def find_first_intersection(ray, surfaces, ignore_surfaces=None):
     first_surf = None
 
     for surf in surfaces:
-        #if surf is ignore_surfaces:
-            #continue
-
         hit = surf.intersection(ray)
         if hit is not None:
             t = hit[0]
@@ -76,33 +74,22 @@ def find_first_intersection(ray, surfaces, ignore_surfaces=None):
 
     return first_hit, first_surf
 
-''' we cant use this function because we need to ignore multiple surfaces
-    instead we call get_color_recursive directly with ignore_surfaces set
-def get_transparency_color(ray, hit, surf, mat, surfaces, lights, scene_settings, depth, materials):
-    if mat.transparency <= 0:
-        return np.zeros(3)
-
-    _, P, _ = hit
-    transp_ray = Ray(P + EPS * ray.direction, ray.direction)
-
-    return get_color_recursive( transp_ray, depth + 1, surfaces, lights, materials, scene_settings, ignore_surface=surf)
-'''
-
+# Compute reflection color recursively
 def get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials):
     if np.any(mat.reflection_color):
         _, P, N = hit
-        # reflection: R = V - 2(V · N)N
+        # Reflection: R = V - 2(V · N)N
         R = normalize(ray.direction - 2 * np.dot(ray.direction, N) * N)
-        # new ray origin: the hit point + EPS in the reflection direction
+        # New ray origin: the hit point + EPS in the reflection direction
         reflection_ray = Ray(P + EPS * R, R)
         reflection_color = (get_color_recursive(reflection_ray, depth + 1,
                             surfaces, lights, materials, scene_settings)
                             * mat.reflection_color)
     else:
         reflection_color = np.zeros(3)
-
     return reflection_color
 
+# Check if the light is occluded from the hit point
 def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
     direction = lgt_point - hit_point
     distance_to_light = np.linalg.norm(direction)
@@ -120,10 +107,9 @@ def is_occluded(lgt_point, hit_point, hit_surface, surfaces):
 
     return False
 
-
+# Calculate light intensity at the hit point considering area light and shadows
 def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     # Direction from the center of the light to the hit point on the surface 
-
     L = hit_point - lgt.position
     L_norm = normalize(L)
     
@@ -136,7 +122,7 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
     N = int(root_shadow_rays)
     cell_size = lgt.radius / N 
     
-    #  Position of the bottom-left corner of the light rectangle
+    # Position of the bottom-left corner of the light rectangle
     bottom_left = lgt.position - (lgt.radius / 2) * u - (lgt.radius / 2) * v
     
     hits = 0
@@ -159,17 +145,14 @@ def calculate_light_intensity(lgt, hit_point, root_shadow_rays, surf, surfaces):
             if not is_occluded(sample_point, hit_point, surf, surfaces):
                 hits += 1
                 
-    # Calculate final intensity using the shadow intensity parameter
-    # percentage_lit is the fraction of rays that reached the surface
     percentage_lit = hits / total_rays
     
-    # Light received = (1 - shadow_intensity) + shadow_intensity * (% of rays hitting)
     intensity = (1 - lgt.shadow_intensity) + (lgt.shadow_intensity * percentage_lit)
     
     return intensity
 
-# local shading only: diffuse, specular, shadows
-# no reflections, no recursion
+# Local shading only: diffuse, specular, shadows
+# No reflections, no recursion
 def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surfaces):
     _, P, N = first_hit
 
@@ -182,17 +165,17 @@ def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surface
     V = normalize(np.array(-ray.direction))
 
     for lgt in lights:        
-        # Case_1: there is a hit
+        # Case 1: there is a hit
         L = normalize(np.array(lgt.position) - P)
         lgt_color = np.array(lgt.color)
 
         # Compute Light Intensity
         light_intensity = calculate_light_intensity(lgt, P, scene_settings.root_number_shadow_rays, surf, surfaces)
 
-        # diffuse component
+        # Diffuse component
         diff = mat_diffuse * lgt_color * max(0, np.dot(N, L)) * light_intensity
 
-        # specular component
+        # Specular component
         R = normalize(2 * np.dot(N, L) * N - L)
         rv = np.dot(R, V)
         spec = mat_specular * lgt_color * lgt.specular_intensity * (max(rv, 0.0) ** mat.shininess)
@@ -200,19 +183,18 @@ def get_local_shading(ray, first_hit, surf, lights, mat, scene_settings, surface
         total_diffuse += diff
         total_specular += spec
 
-    # return np.clip(output_color, 0.0, 1.0)
     return total_diffuse + total_specular
 
-
+# Recursive color calculation: the main function for color computation
 def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings, ignore_surfaces=None):
     if ignore_surfaces is None:
         ignore_surfaces = set()
     
-    # first case: check recursion limit
+    # Case 1: check recursion limit
     if depth >= scene_settings.max_recursions:
         return np.array(scene_settings.background_color)
 
-    # second case: find first intersection, if none, return background color
+    # Case 2: find first intersection, if none, return background color
     hit, surf = find_first_intersection(ray, surfaces, ignore_surfaces)
     if hit is None:
         return np.array(scene_settings.background_color)
@@ -224,10 +206,10 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
     else:
         local_color = np.zeros(3)
 
-    # reflection
+    # Reflection
     reflection_color = get_reflection_color(ray, hit, mat, surfaces, lights, scene_settings, depth, materials)
 
-    # transparency
+    # Transparency
     transparency_color = np.zeros(3)
     if mat.transparency > 0:
         _, P, _ = hit
@@ -238,7 +220,7 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
 
         transparency_color = get_color_recursive(transp_ray, depth + 1, surfaces, lights, materials, scene_settings, ignore_surfaces=new_ignore)
 
-    # combine all components
+    # Combine all components
     output_color = (
         (1 - mat.transparency) * local_color
         + mat.transparency * transparency_color
@@ -246,6 +228,7 @@ def get_color_recursive(ray, depth, surfaces, lights, materials, scene_settings,
         )
 
     return output_color
+
 
 def main():
     random.seed(0)
@@ -259,51 +242,49 @@ def main():
     # Parse the scene file
     camera, scene_settings, surfaces, lights, materials = parse_scene_file(args.scene_file)
     
-    # prints for debugging
+    # Prints for debugging
     print("Scene loaded successfully")
     print(f"  Surfaces: {len(surfaces)}")
     print(f"  Lights: {len(lights)}")
     print(f"  Materials: {len(materials)}")
 
-    # get the image size
+    # Get the image size
     image_width = args.width
     image_height = args.height
 
-    # prints for debugging
+    # Prints for debugging
     print(f"Rendering image of size {image_width} x {image_height}")
 
     aspect_ratio = image_width / image_height
     camera = Camera(camera.position, camera.look_at, camera.up_vector, camera.screen_distance, camera.screen_width, aspect_ratio)
     
-    # TODO: Implement the ray tracer
     top_left = camera.screen_geometry()
     pixel_w = camera.screen_width / image_width
     pixel_h = camera.screen_height / image_height
 
     image_array = np.zeros((image_height, image_width, 3))
     for i in range(image_height):
-        # prints for debugging
+        # Prints for debugging
         if i % 10 == 0:
             print(f"Rendering row {i+1} of {image_height}")
         for j in range(image_width):
             # Discover pixel's screen location
+            """
             pixel_point = (top_left + 
                            camera.right * (j * pixel_w + pixel_w / 2) -
                            camera.up * (i * pixel_h + pixel_h / 2))
+            """
+            pixel_point = (top_left + 
+                camera.right * (j * pixel_w) -
+                camera.up * (i * pixel_h))
             ray = Ray(camera.position, normalize(pixel_point - camera.position))
             
-            #Check Intersection of the ray with all surfaces in the scene
+            # Check Intersection of the ray with all surfaces in the scene
             hit, surf = find_first_intersection(ray, surfaces)
-            '''
-            if hit is None or surf is None:
-                image_array[i, j] = np.array(scene_settings.background_color) * 255
-                continue
-                        # TODO: Compute the color of the pixel
-            '''
             color = get_color_recursive(ray, 0, surfaces, lights, materials, scene_settings)
             image_array[i,j] = color
                     
-    # print for debugging
+    # Print for debugging
     image_array = np.clip(image_array, 0, 1)
     image_array = (image_array * 255).astype(np.uint8)
     print("Rendering finished, saving image...")
@@ -311,7 +292,7 @@ def main():
     # Save the output image
     save_image(image_array, args.output_image)
 
-    # print for debugging
+    # Print for debugging
     print("Image saved successfully")
 
     

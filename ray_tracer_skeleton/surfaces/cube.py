@@ -12,7 +12,7 @@ class Cube(Surface):
         origin = ray.origin          
         direction = ray.direction 
 
-        # 1. Define axis boundaries
+        # Define axis boundaries
         half = self.scale / 2.0
         pos_array = np.array(self.position)
         min_bound = pos_array - half  
@@ -21,7 +21,7 @@ class Cube(Surface):
         t_min = -np.inf   
         t_max =  np.inf   
 
-        # 2. Slab method per axis
+        # Slab method per axis
         for axis in range(3):  
             o = origin[axis]
             d = direction[axis]
@@ -50,7 +50,7 @@ class Cube(Surface):
             if t_min > t_max:
                 return None
 
-        # 3. Ignore hits behind the Ray
+        # Ignore hits behind the Ray
         if t_max < EPS:
             return None 
 
@@ -58,10 +58,10 @@ class Cube(Surface):
         # If we start inside, t_min<=0 and t_max is the exit point.
         t_hit = t_min if t_min > EPS else t_max
 
-        # 4. Compute hit point: P = origin + direction * t
+        # Compute hit point: P = origin + direction * t
         P = origin + t_hit * direction
 
-        # 5. Compute normal from which face we hit
+        # Compute normal from which face we hit
         normal = np.zeros(3)
 
         if abs(P[0] - min_bound[0]) < EPS:
