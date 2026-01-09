@@ -269,11 +269,6 @@ def main():
             print(f"Rendering row {i+1} of {image_height}")
         for j in range(image_width):
             # Discover pixel's screen location
-            """
-            pixel_point = (top_left + 
-                           camera.right * (j * pixel_w + pixel_w / 2) -
-                           camera.up * (i * pixel_h + pixel_h / 2))
-            """
             pixel_point = (top_left + 
                 camera.right * (j * pixel_w) -
                 camera.up * (i * pixel_h))
